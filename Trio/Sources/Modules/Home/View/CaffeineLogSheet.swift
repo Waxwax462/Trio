@@ -45,7 +45,7 @@ struct CaffeineLogSheet: View {
                     let pct = (state.caffeineIRMultiplier - 1.0) * 100
                     Text(pct < 1 ? "None" : String(format: "+%.0f%%", pct))
                         .font(.system(.title2, design: .rounded, weight: .semibold))
-                        .foregroundStyle(pct < 5 ? .secondary : .orange)
+                        .foregroundStyle(pct < 5 ? AnyShapeStyle(.secondary) : AnyShapeStyle(.orange))
                 }
             }
             .padding(.vertical, 4)
