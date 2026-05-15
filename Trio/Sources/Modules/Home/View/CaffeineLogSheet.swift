@@ -13,7 +13,7 @@ struct CaffeineLogSheet: View {
                 currentLevelSection
                 quickAddSection
                 customSection
-                if !state.caffeineService?.entries.isEmpty ?? true { entriesSection }
+                if !(state.caffeineService?.entries.isEmpty ?? true) { entriesSection }
             }
             .navigationTitle("Caffeine")
             .navigationBarTitleDisplayMode(.inline)

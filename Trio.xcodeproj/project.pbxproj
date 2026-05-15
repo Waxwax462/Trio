@@ -217,6 +217,12 @@
 		CC3300000006000000000001 /* MealLogSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3300000003000000000001 /* MealLogSheet.swift */; };
 		CC3300000007000000000001 /* HomeStateModel+Meal.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3300000004000000000001 /* HomeStateModel+Meal.swift */; };
 		3B4196E02D8C4BC00091DFF7 /* HomeStateModel+CGM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4196DF2D8C4BBB0091DFF7 /* HomeStateModel+CGM.swift */; };
+		DD4400000008000000000001 /* HomeStateModel+SickDay.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4400000004000000000001 /* HomeStateModel+SickDay.swift */; };
+		DD4400000009000000000001 /* SickDayBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD4400000005000000000001 /* SickDayBanner.swift */; };
+		EE5500000008000000000001 /* ReflectionsDataFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5500000004000000000001 /* ReflectionsDataFlow.swift */; };
+		EE5500000009000000000001 /* ReflectionsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5500000005000000000001 /* ReflectionsProvider.swift */; };
+		EE550000000A000000000001 /* ReflectionsStateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5500000006000000000001 /* ReflectionsStateModel.swift */; };
+		EE550000000B000000000001 /* ReflectionsRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5500000007000000000001 /* ReflectionsRootView.swift */; };
 		3B47C6102DA0A28F00B0E5EF /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 3B47C60F2DA0A28F00B0E5EF /* FirebaseCrashlytics */; };
 		3B4BA76A2D8DBD690069D5B8 /* CGMBLEKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B4BA75B2D8DBD690069D5B8 /* CGMBLEKit.framework */; };
 		3B4BA76B2D8DBD690069D5B8 /* CGMBLEKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3B4BA75B2D8DBD690069D5B8 /* CGMBLEKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -1091,6 +1097,12 @@
 		CC3300000003000000000001 /* MealLogSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealLogSheet.swift; sourceTree = "<group>"; };
 		CC3300000004000000000001 /* HomeStateModel+Meal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeStateModel+Meal.swift"; sourceTree = "<group>"; };
 		3B4196DF2D8C4BBB0091DFF7 /* HomeStateModel+CGM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeStateModel+CGM.swift"; sourceTree = "<group>"; };
+		DD4400000004000000000001 /* HomeStateModel+SickDay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeStateModel+SickDay.swift"; sourceTree = "<group>"; };
+		DD4400000005000000000001 /* SickDayBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SickDayBanner.swift; sourceTree = "<group>"; };
+		EE5500000004000000000001 /* ReflectionsDataFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionsDataFlow.swift; sourceTree = "<group>"; };
+		EE5500000005000000000001 /* ReflectionsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionsProvider.swift; sourceTree = "<group>"; };
+		EE5500000006000000000001 /* ReflectionsStateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionsStateModel.swift; sourceTree = "<group>"; };
+		EE5500000007000000000001 /* ReflectionsRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionsRootView.swift; sourceTree = "<group>"; };
 		3B4BA75B2D8DBD690069D5B8 /* CGMBLEKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CGMBLEKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B4BA75C2D8DBD690069D5B8 /* CGMBLEKitUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CGMBLEKitUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B4BA75D2D8DBD690069D5B8 /* DanaKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = DanaKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1947,6 +1959,7 @@
 				0610F7D6D2EC00E3BA1569F0 /* ConfigEditor */,
 				E592A3762CEEC038009A472C /* ContactImage */,
 				9E56E3626FAD933385101B76 /* History */,
+				EE5500000001000000000001 /* Reflections */,
 				195D80B22AF696EE00D25097 /* DynamicSettings */,
 				C2AA6CF52E1A734A00BF6C16 /* SettingsExport */,
 				DD17454C2C55CA0200211FAC /* GeneralSettings */,
@@ -2048,6 +2061,7 @@
 				AA1100000004000000000001 /* HomeStateModel+HeartRate.swift */,
 				BB2200000004000000000001 /* HomeStateModel+Caffeine.swift */,
 				CC3300000004000000000001 /* HomeStateModel+Meal.swift */,
+				DD4400000004000000000001 /* HomeStateModel+SickDay.swift */,
 				58645B972CA2D16A008AFCE7 /* HomeStateModel+Setup */,
 				3811DE2C25C9D49500A708ED /* View */,
 			);
@@ -2059,6 +2073,7 @@
 			children = (
 				3811DE2E25C9D49500A708ED /* HomeRootView.swift */,
 				AA1100000005000000000001 /* HRStressView.swift */,
+				DD4400000005000000000001 /* SickDayBanner.swift */,
 				BB2200000005000000000001 /* CaffeineLogSheet.swift */,
 				CC3300000003000000000001 /* MealLogSheet.swift */,
 				3833B51E260264AC003021B3 /* Chart */,
@@ -2886,6 +2901,25 @@
 				0EE66DD474AFFD4FD787D5B9 /* View */,
 			);
 			path = History;
+			sourceTree = "<group>";
+		};
+		EE5500000001000000000001 /* Reflections */ = {
+			isa = PBXGroup;
+			children = (
+				EE5500000004000000000001 /* ReflectionsDataFlow.swift */,
+				EE5500000005000000000001 /* ReflectionsProvider.swift */,
+				EE5500000006000000000001 /* ReflectionsStateModel.swift */,
+				EE5500000002000000000001 /* View */,
+			);
+			path = Reflections;
+			sourceTree = "<group>";
+		};
+		EE5500000002000000000001 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				EE5500000007000000000001 /* ReflectionsRootView.swift */,
+			);
+			path = View;
 			sourceTree = "<group>";
 		};
 		A42F1FEDFFD0DDE00AAD54D3 /* BasalProfileEditor */ = {
@@ -4791,6 +4825,12 @@
 				DD09D47B2C5986D1003FEA5D /* CalendarEventSettingsDataFlow.swift in Sources */,
 				DD1745202C55523E00211FAC /* SMBSettingsDataFlow.swift in Sources */,
 				D6D02515BBFBE64FEBE89856 /* HistoryRootView.swift in Sources */,
+				DD4400000008000000000001 /* HomeStateModel+SickDay.swift in Sources */,
+				DD4400000009000000000001 /* SickDayBanner.swift in Sources */,
+				EE5500000008000000000001 /* ReflectionsDataFlow.swift in Sources */,
+				EE5500000009000000000001 /* ReflectionsProvider.swift in Sources */,
+				EE550000000A000000000001 /* ReflectionsStateModel.swift in Sources */,
+				EE550000000B000000000001 /* ReflectionsRootView.swift in Sources */,
 				DD1745292C55642100211FAC /* SettingInputSection.swift in Sources */,
 				38569349270B5DFB0002C50D /* AppGroupSource.swift in Sources */,
 				F5CA3DB1F9DC8B05792BBFAA /* CGMSettingsDataFlow.swift in Sources */,

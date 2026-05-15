@@ -583,7 +583,7 @@ extension Home {
                 }
             }
             .onTapGesture {
-                selectedTab = 2
+                selectedTab = 3
             }
         }
 
@@ -600,7 +600,7 @@ extension Home {
                 }
             }
             .onTapGesture {
-                selectedTab = 2
+                selectedTab = 3
             }
         }
 
@@ -679,7 +679,7 @@ extension Home {
                     // clear color for the icon
                     .foregroundStyle(Color.clear)
             }.onTapGesture {
-                selectedTab = 2
+                selectedTab = 3
             }
         }
 
@@ -863,6 +863,32 @@ extension Home {
             }
         }
 
+        @ViewBuilder var sickDayButton: some View {
+            Button {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    state.toggleSickDayMode()
+                }
+            } label: {
+                VStack(spacing: 2) {
+                    Image(systemName: "thermometer.medium")
+                        .font(.title3)
+                        .foregroundStyle(state.isSickDayModeActive ? .red : .secondary)
+                    Text("Sick Day")
+                        .font(.caption2)
+                        .foregroundStyle(state.isSickDayModeActive ? .red : .secondary)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    state.isSickDayModeActive
+                        ? AnyShapeStyle(Color.red.opacity(0.12))
+                        : AnyShapeStyle(.ultraThinMaterial),
+                    in: RoundedRectangle(cornerRadius: 12)
+                )
+            }
+            .buttonStyle(.plain)
+        }
+
         @ViewBuilder var mealButton: some View {
             Button {
                 isMealSheetPresented = true
@@ -987,9 +1013,13 @@ extension Home {
                     }
                 }
 
+                SickDayBanner(state: state)
+                    .animation(.easeInOut(duration: 0.25), value: state.isSickDayModeActive)
+
                 HStack(spacing: 8) {
                     HRStressView(state: state)
                     Spacer()
+                    sickDayButton
                     mealButton
                     caffeineButton
                 }
@@ -1172,6 +1202,13 @@ extension Home {
                     NavigationStack { History.RootView(resolver: resolver) }
                         .tabItem { Label("History", systemImage: historySFSymbol) }.tag(1)
 
+                    NavigationStack { Reflections.RootView(resolver: resolver) }
+                        .tabItem {
+                            Label(
+                                "Reflections",
+                                systemImage: "sparkles"
+                            ) }.tag(2)
+
                     Spacer()
 
                     NavigationStack { Adjustments.RootView(resolver: resolver) }
@@ -1179,14 +1216,14 @@ extension Home {
                             Label(
                                 "Adjustments",
                                 systemImage: "slider.horizontal.2.gobackward"
-                            ) }.tag(2)
+                            ) }.tag(3)
 
                     NavigationStack(path: self.$settingsPath) {
                         Settings.RootView(resolver: resolver) }
                         .tabItem { Label(
                             "Settings",
                             systemImage: "gear"
-                        ) }.tag(3)
+                        ) }.tag(4)
                 }
                 .tint(Color.tabBar)
 

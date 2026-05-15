@@ -14,8 +14,9 @@ extension Home.StateModel {
                 self.caffeineIRMultiplier = s.insulinResistanceMultiplier
             }
             .store(in: &lifetime)
-        // Seed initial values synchronously (no async needed)
-        currentCaffeineMg = service.currentMg
-        caffeineIRMultiplier = service.insulinResistanceMultiplier
+        Task { @MainActor [weak self] in
+            self?.currentCaffeineMg = service.currentMg
+            self?.caffeineIRMultiplier = service.insulinResistanceMultiplier
+        }
     }
 }

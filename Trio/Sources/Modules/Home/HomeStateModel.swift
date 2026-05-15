@@ -95,8 +95,8 @@ extension Home {
         var isLoopStatusPresented: Bool = false
         var isLegendPresented: Bool = false
         var roundedTotalBolus: String = ""
-        var selectedTab: Int = 0
         var waitForSuggestion: Bool = false
+        var isSickDayModeActive: Bool = UserDefaults.standard.bool(forKey: "rheos.sickDayMode")
         var glucoseFromPersistence: [GlucoseStored] = []
         var latestTwoGlucoseValues: [GlucoseStored] = []
         var carbsFromPersistence: [CarbEntryStored] = []
