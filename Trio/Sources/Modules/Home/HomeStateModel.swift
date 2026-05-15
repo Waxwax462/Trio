@@ -35,6 +35,13 @@ extension Home {
         var caffeineIRMultiplier: Double = 1.0
         @ObservationIgnored var caffeineService: (any CaffeineService)?
 
+        // MARK: - Biometrics (observed — updated by setupBiometrics sink)
+        @ObservationIgnored var biometricsService: BiometricsService?
+        var stepCount: Int = 0
+        var hrv: Double? = nil
+        var sleepHours: Double? = nil
+        var biometricsAuthStatus: BiometricsAuthorizationStatus = .notDetermined
+
         var cgmStateModel: CGMSettings.StateModel {
             CGMSettings.StateModel.shared
         }
@@ -240,6 +247,9 @@ extension Home {
                     }
                     group.addTask {
                         self.setupCaffeine()
+                    }
+                    group.addTask {
+                        self.setupBiometrics()
                     }
                 }
             }

@@ -209,6 +209,8 @@
 		AA1100000007000000000001 /* HeartRateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100000003000000000001 /* HeartRateService.swift */; };
 		AA1100000008000000000001 /* HomeStateModel+HeartRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100000004000000000001 /* HomeStateModel+HeartRate.swift */; };
 		AA1100000009000000000001 /* HRStressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100000005000000000001 /* HRStressView.swift */; };
+		FF660002 /* BiometricsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF660001 /* BiometricsService.swift */; };
+		FF660004 /* HomeStateModel+Biometrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF660003 /* HomeStateModel+Biometrics.swift */; };
 		BB2200000006000000000001 /* CaffeineService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB2200000002000000000001 /* CaffeineService.swift */; };
 		BB2200000007000000000001 /* CaffeineEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB2200000003000000000001 /* CaffeineEntry.swift */; };
 		BB2200000008000000000001 /* HomeStateModel+Caffeine.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB2200000004000000000001 /* HomeStateModel+Caffeine.swift */; };
@@ -1089,6 +1091,8 @@
 		AA1100000003000000000001 /* HeartRateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartRateService.swift; sourceTree = "<group>"; };
 		AA1100000004000000000001 /* HomeStateModel+HeartRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeStateModel+HeartRate.swift"; sourceTree = "<group>"; };
 		AA1100000005000000000001 /* HRStressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HRStressView.swift; sourceTree = "<group>"; };
+		FF660001 /* BiometricsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricsService.swift; sourceTree = "<group>"; };
+		FF660003 /* HomeStateModel+Biometrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeStateModel+Biometrics.swift"; sourceTree = "<group>"; };
 		BB2200000002000000000001 /* CaffeineService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineService.swift; sourceTree = "<group>"; };
 		BB2200000003000000000001 /* CaffeineEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineEntry.swift; sourceTree = "<group>"; };
 		BB2200000004000000000001 /* HomeStateModel+Caffeine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeStateModel+Caffeine.swift"; sourceTree = "<group>"; };
@@ -2060,6 +2064,7 @@
 				3B4196DF2D8C4BBB0091DFF7 /* HomeStateModel+CGM.swift */,
 				AA1100000004000000000001 /* HomeStateModel+HeartRate.swift */,
 				BB2200000004000000000001 /* HomeStateModel+Caffeine.swift */,
+				FF660003 /* HomeStateModel+Biometrics.swift */,
 				CC3300000004000000000001 /* HomeStateModel+Meal.swift */,
 				DD4400000004000000000001 /* HomeStateModel+SickDay.swift */,
 				58645B972CA2D16A008AFCE7 /* HomeStateModel+Setup */,
@@ -2117,6 +2122,7 @@
 				F90692A8274B7A980037068D /* HealthKit */,
 				AA1100000001000000000001 /* HeartRate */,
 				BB2200000001000000000001 /* Caffeine */,
+				FF660005 /* Biometrics */,
 				CC3300000001000000000001 /* Meal */,
 				3BF85FE22E427312000D7351 /* IOB */,
 				6B1A8D2C2B156EC100E76752 /* LiveActivity */,
@@ -3889,6 +3895,14 @@
 			path = HeartRate;
 			sourceTree = "<group>";
 		};
+		FF660005 /* Biometrics */ = {
+			isa = PBXGroup;
+			children = (
+				FF660001 /* BiometricsService.swift */,
+			);
+			path = Biometrics;
+			sourceTree = "<group>";
+		};
 		BB2200000001000000000001 /* Caffeine */ = {
 			isa = PBXGroup;
 			children = (
@@ -4521,6 +4535,8 @@
 				AA1100000007000000000001 /* HeartRateService.swift in Sources */,
 				AA1100000008000000000001 /* HomeStateModel+HeartRate.swift in Sources */,
 				AA1100000009000000000001 /* HRStressView.swift in Sources */,
+				FF660002 /* BiometricsService.swift in Sources */,
+				FF660004 /* HomeStateModel+Biometrics.swift in Sources */,
 				BB2200000006000000000001 /* CaffeineService.swift in Sources */,
 				BB2200000007000000000001 /* CaffeineEntry.swift in Sources */,
 				BB2200000008000000000001 /* HomeStateModel+Caffeine.swift in Sources */,

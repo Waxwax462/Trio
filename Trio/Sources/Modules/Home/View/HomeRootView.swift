@@ -932,6 +932,36 @@ extension Home {
             }
         }
 
+        @ViewBuilder var biometricsRow: some View {
+            if state.biometricsAuthStatus == .denied {
+                Text("Biometrics unavailable — check Health permissions")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            } else {
+                let hasData = state.stepCount > 0 || state.hrv != nil || state.sleepHours != nil
+                if hasData {
+                    HStack(spacing: 16) {
+                        Label(
+                            state.stepCount > 0
+                                ? "\(state.stepCount.formatted()) steps"
+                                : "— steps",
+                            systemImage: "shoe.fill"
+                        )
+                        Label(
+                            state.hrv.map { "\(Int($0)) ms" } ?? "— ms",
+                            systemImage: "waveform.path.ecg"
+                        )
+                        Label(
+                            state.sleepHours.map { String(format: "%.1f h", $0) } ?? "— h",
+                            systemImage: "bed.double.fill"
+                        )
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                }
+            }
+        }
+
         @ViewBuilder func alertSafetyNotificationsView(geo: GeometryProxy) -> some View {
             ZStack {
                 /// rectangle as background
@@ -1026,6 +1056,10 @@ extension Home {
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
 
+                biometricsRow
+                    .padding(.horizontal, 16)
+                    .padding(.top, 4)
+
                 mealPanel(geo).padding(.top, UIDevice.adjustPadding(min: nil, max: 30))
                     .padding(.bottom, UIDevice.adjustPadding(min: nil, max: 20))
 
@@ -1086,8 +1120,11 @@ extension Home {
                 switch newPhase {
                 case .active:
                     state.startHeartRate()
+                    state.startBiometrics()
+                    state.refreshBiometricsSleep()
                 case .background:
                     state.stopHeartRate()
+                    state.stopBiometrics()
                 default:
                     break
                 }

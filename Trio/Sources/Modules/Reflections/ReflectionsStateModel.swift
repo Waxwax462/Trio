@@ -38,45 +38,33 @@ extension Reflections {
         }
 
         private func fetchGlucoseTIR(since startDate: Date) async -> (tir: TIRResult, count: Int) {
-            await coredataContext.perform { [weak self] in
-                guard let self = self else {
-                    return (TIRResult(inRange: 0, hypo: 0, hyper: 0, average: 0), 0)
-                }
-
+            let context = coredataContext
+            return await context.perform {
                 let fr = NSFetchRequest<GlucoseStored>(entityName: "GlucoseStored")
                 fr.predicate = NSPredicate(format: "date >= %@", startDate as NSDate)
                 fr.sortDescriptors = [NSSortDescriptor(keyPath: \GlucoseStored.date, ascending: true)]
-
                 do {
-                    let samples = try self.coredataContext.fetch(fr)
-                    let tir = self.computeTIR(samples: samples)
-                    return (tir, samples.count)
+                    let samples = try context.fetch(fr)
+                    guard !samples.isEmpty else {
+                        return (TIRResult(inRange: 0, hypo: 0, hyper: 0, average: 0), 0)
+                    }
+                    let total = Double(samples.count)
+                    let low: Double = 70, high: Double = 180
+                    let inRange = Double(samples.filter { Double($0.glucose) >= low && Double($0.glucose) <= high }.count)
+                    let hypo = Double(samples.filter { Double($0.glucose) < low }.count)
+                    let hyper = Double(samples.filter { Double($0.glucose) > high }.count)
+                    let avg = samples.map { Double($0.glucose) }.reduce(0, +) / total
+                    return (TIRResult(
+                        inRange: inRange / total * 100,
+                        hypo: hypo / total * 100,
+                        hyper: hyper / total * 100,
+                        average: avg
+                    ), samples.count)
                 } catch {
                     debug(.default, "ReflectionsStateModel: failed to fetch glucose: \(error)")
                     return (TIRResult(inRange: 0, hypo: 0, hyper: 0, average: 0), 0)
                 }
             }
-        }
-
-        private func computeTIR(
-            samples: [GlucoseStored],
-            low: Double = 70,
-            high: Double = 180
-        ) -> TIRResult {
-            guard !samples.isEmpty else {
-                return TIRResult(inRange: 0, hypo: 0, hyper: 0, average: 0)
-            }
-            let total = Double(samples.count)
-            let inRange = samples.filter { Double($0.glucose) >= low && Double($0.glucose) <= high }.count
-            let hypo = samples.filter { Double($0.glucose) < low }.count
-            let hyper = samples.filter { Double($0.glucose) > high }.count
-            let avg = samples.map { Double($0.glucose) }.reduce(0, +) / total
-            return TIRResult(
-                inRange: Double(inRange) / total * 100,
-                hypo: Double(hypo) / total * 100,
-                hyper: Double(hyper) / total * 100,
-                average: avg
-            )
         }
     }
 }
