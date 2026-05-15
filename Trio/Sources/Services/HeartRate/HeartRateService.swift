@@ -48,7 +48,8 @@ final class BaseHeartRateService: HeartRateService, Injectable {
     private var anchor: HKQueryAnchor?
     private var ringBuffer = RingBuffer<HRSample>(capacity: 60)
 
-    private let stalenessThreshold: TimeInterval = 5
+    // Apple Watch background HR fires every 1–5 min; 5 min gives comfortable headroom.
+    private let stalenessThreshold: TimeInterval = 300
     private var stalenessTimer: Timer?
 
     private static let hrType = HKQuantityType(.heartRate)
@@ -91,7 +92,14 @@ final class BaseHeartRateService: HeartRateService, Injectable {
     // MARK: - Query (call on MainActor)
 
     private func startQuery() {
-        let predicate = HKQuery.predicateForSamples(withStart: Date(), end: nil)
+        // Stop any existing query before starting a new one.
+        if let existing = anchoredQuery {
+            healthKitStore.stop(existing)
+            anchoredQuery = nil
+        }
+        // Look back 5 min so the initial handler immediately returns the most recent sample.
+        let lookback = Date().addingTimeInterval(-300)
+        let predicate = HKQuery.predicateForSamples(withStart: lookback, end: nil)
         let query = HKAnchoredObjectQuery(
             type: Self.hrType,
             predicate: predicate,

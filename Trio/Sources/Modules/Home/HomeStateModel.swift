@@ -30,6 +30,11 @@ extension Home {
         var hrAuthorizationStatus: HRAuthorizationStatus = .notDetermined
         @ObservationIgnored var hrService: (any HeartRateService)?
 
+        // MARK: - Caffeine (observed — updated by setupCaffeine sink)
+        var currentCaffeineMg: Double = 0
+        var caffeineIRMultiplier: Double = 1.0
+        @ObservationIgnored var caffeineService: (any CaffeineService)?
+
         var cgmStateModel: CGMSettings.StateModel {
             CGMSettings.StateModel.shared
         }
@@ -232,6 +237,9 @@ extension Home {
                     }
                     group.addTask {
                         self.setupHeartRate()
+                    }
+                    group.addTask {
+                        self.setupCaffeine()
                     }
                 }
             }

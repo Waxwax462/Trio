@@ -2,10 +2,11 @@ import Combine
 import Foundation
 
 extension Home.StateModel {
-    // MARK: - Setup
+    // MARK: - Setup (call once at launch)
 
     func setupHeartRate() {
-        guard let service = resolver?.resolve(HeartRateService.self) else { return }
+        // Guard: service already wired up — don't create duplicate subscriptions.
+        guard hrService == nil, let service = resolver?.resolve(HeartRateService.self) else { return }
         hrService = service
         service.updatePublisher
             .receive(on: DispatchQueue.main)
@@ -17,6 +18,13 @@ extension Home.StateModel {
                 self.hrAuthorizationStatus = s.authorizationStatus
             }
             .store(in: &lifetime)
+        startHeartRate()
+    }
+
+    // MARK: - Start / Stop (safe to call on every foreground / background transition)
+
+    func startHeartRate() {
+        guard let service = hrService else { return }
         Task {
             do {
                 try await service.start()
@@ -28,7 +36,5 @@ extension Home.StateModel {
         }
     }
 
-    func stopHeartRate() {
-        hrService?.stop()
-    }
+    func stopHeartRate() { hrService?.stop() }
 }

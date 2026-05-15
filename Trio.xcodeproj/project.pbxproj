@@ -209,6 +209,13 @@
 		AA1100000007000000000001 /* HeartRateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100000003000000000001 /* HeartRateService.swift */; };
 		AA1100000008000000000001 /* HomeStateModel+HeartRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100000004000000000001 /* HomeStateModel+HeartRate.swift */; };
 		AA1100000009000000000001 /* HRStressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1100000005000000000001 /* HRStressView.swift */; };
+		BB2200000006000000000001 /* CaffeineService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB2200000002000000000001 /* CaffeineService.swift */; };
+		BB2200000007000000000001 /* CaffeineEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB2200000003000000000001 /* CaffeineEntry.swift */; };
+		BB2200000008000000000001 /* HomeStateModel+Caffeine.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB2200000004000000000001 /* HomeStateModel+Caffeine.swift */; };
+		BB2200000009000000000001 /* CaffeineLogSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB2200000005000000000001 /* CaffeineLogSheet.swift */; };
+		CC3300000005000000000001 /* MealEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3300000002000000000001 /* MealEstimator.swift */; };
+		CC3300000006000000000001 /* MealLogSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3300000003000000000001 /* MealLogSheet.swift */; };
+		CC3300000007000000000001 /* HomeStateModel+Meal.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3300000004000000000001 /* HomeStateModel+Meal.swift */; };
 		3B4196E02D8C4BC00091DFF7 /* HomeStateModel+CGM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B4196DF2D8C4BBB0091DFF7 /* HomeStateModel+CGM.swift */; };
 		3B47C6102DA0A28F00B0E5EF /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 3B47C60F2DA0A28F00B0E5EF /* FirebaseCrashlytics */; };
 		3B4BA76A2D8DBD690069D5B8 /* CGMBLEKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B4BA75B2D8DBD690069D5B8 /* CGMBLEKit.framework */; };
@@ -1076,6 +1083,13 @@
 		AA1100000003000000000001 /* HeartRateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartRateService.swift; sourceTree = "<group>"; };
 		AA1100000004000000000001 /* HomeStateModel+HeartRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeStateModel+HeartRate.swift"; sourceTree = "<group>"; };
 		AA1100000005000000000001 /* HRStressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HRStressView.swift; sourceTree = "<group>"; };
+		BB2200000002000000000001 /* CaffeineService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineService.swift; sourceTree = "<group>"; };
+		BB2200000003000000000001 /* CaffeineEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineEntry.swift; sourceTree = "<group>"; };
+		BB2200000004000000000001 /* HomeStateModel+Caffeine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeStateModel+Caffeine.swift"; sourceTree = "<group>"; };
+		BB2200000005000000000001 /* CaffeineLogSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaffeineLogSheet.swift; sourceTree = "<group>"; };
+		CC3300000002000000000001 /* MealEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealEstimator.swift; sourceTree = "<group>"; };
+		CC3300000003000000000001 /* MealLogSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealLogSheet.swift; sourceTree = "<group>"; };
+		CC3300000004000000000001 /* HomeStateModel+Meal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeStateModel+Meal.swift"; sourceTree = "<group>"; };
 		3B4196DF2D8C4BBB0091DFF7 /* HomeStateModel+CGM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeStateModel+CGM.swift"; sourceTree = "<group>"; };
 		3B4BA75B2D8DBD690069D5B8 /* CGMBLEKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CGMBLEKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B4BA75C2D8DBD690069D5B8 /* CGMBLEKitUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CGMBLEKitUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2032,6 +2046,8 @@
 				3811DE2825C9D49500A708ED /* HomeStateModel.swift */,
 				3B4196DF2D8C4BBB0091DFF7 /* HomeStateModel+CGM.swift */,
 				AA1100000004000000000001 /* HomeStateModel+HeartRate.swift */,
+				BB2200000004000000000001 /* HomeStateModel+Caffeine.swift */,
+				CC3300000004000000000001 /* HomeStateModel+Meal.swift */,
 				58645B972CA2D16A008AFCE7 /* HomeStateModel+Setup */,
 				3811DE2C25C9D49500A708ED /* View */,
 			);
@@ -2043,6 +2059,8 @@
 			children = (
 				3811DE2E25C9D49500A708ED /* HomeRootView.swift */,
 				AA1100000005000000000001 /* HRStressView.swift */,
+				BB2200000005000000000001 /* CaffeineLogSheet.swift */,
+				CC3300000003000000000001 /* MealLogSheet.swift */,
 				3833B51E260264AC003021B3 /* Chart */,
 				3833B51F260264B6003021B3 /* Header */,
 			);
@@ -2083,6 +2101,8 @@
 				E592A37E2CEEC046009A472C /* ContactImage */,
 				F90692A8274B7A980037068D /* HealthKit */,
 				AA1100000001000000000001 /* HeartRate */,
+				BB2200000001000000000001 /* Caffeine */,
+				CC3300000001000000000001 /* Meal */,
 				3BF85FE22E427312000D7351 /* IOB */,
 				6B1A8D2C2B156EC100E76752 /* LiveActivity */,
 				3811DE9425C9D88200A708ED /* Network */,
@@ -2409,6 +2429,7 @@
 				3870FF4225EC13F40088248F /* BloodGlucose.swift */,
 				38A9260425F012D8009E3739 /* CarbRatios.swift */,
 				38D0B3D825EC07C400CB6E88 /* CarbsEntry.swift */,
+				BB2200000003000000000001 /* CaffeineEntry.swift */,
 				19D4E4EA29FC6A9F00351451 /* Charts.swift */,
 				DD6D67E32C9C253500660C9B /* ColorSchemeOption.swift */,
 				DD9ECB692CA99F6C00AA7C45 /* CommandPayload.swift */,
@@ -3834,6 +3855,22 @@
 			path = HeartRate;
 			sourceTree = "<group>";
 		};
+		BB2200000001000000000001 /* Caffeine */ = {
+			isa = PBXGroup;
+			children = (
+				BB2200000002000000000001 /* CaffeineService.swift */,
+			);
+			path = Caffeine;
+			sourceTree = "<group>";
+		};
+		CC3300000001000000000001 /* Meal */ = {
+			isa = PBXGroup;
+			children = (
+				CC3300000002000000000001 /* MealEstimator.swift */,
+			);
+			path = Meal;
+			sourceTree = "<group>";
+		};
 		F90692CD274B99850037068D /* HealthKit */ = {
 			isa = PBXGroup;
 			children = (
@@ -4450,6 +4487,13 @@
 				AA1100000007000000000001 /* HeartRateService.swift in Sources */,
 				AA1100000008000000000001 /* HomeStateModel+HeartRate.swift in Sources */,
 				AA1100000009000000000001 /* HRStressView.swift in Sources */,
+				BB2200000006000000000001 /* CaffeineService.swift in Sources */,
+				BB2200000007000000000001 /* CaffeineEntry.swift in Sources */,
+				BB2200000008000000000001 /* HomeStateModel+Caffeine.swift in Sources */,
+				BB2200000009000000000001 /* CaffeineLogSheet.swift in Sources */,
+				CC3300000005000000000001 /* MealEstimator.swift in Sources */,
+				CC3300000006000000000001 /* MealLogSheet.swift in Sources */,
+				CC3300000007000000000001 /* HomeStateModel+Meal.swift in Sources */,
 				3B4196E02D8C4BC00091DFF7 /* HomeStateModel+CGM.swift in Sources */,
 				38D0B3D925EC07C400CB6E88 /* CarbsEntry.swift in Sources */,
 				DD32CF9C2CC82499003686D6 /* TrioRemoteControl+TempTarget.swift in Sources */,

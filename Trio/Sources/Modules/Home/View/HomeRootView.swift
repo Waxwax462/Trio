@@ -24,6 +24,8 @@ extension Home {
 
         @State var settingsPath = NavigationPath()
         @State var isStatusPopupPresented = false
+        @State var isCaffeineSheetPresented = false
+        @State var isMealSheetPresented = false
         @State var showCancelAlert = false
         @State var showCancelConfirmDialog = false
         @State var isConfirmStopOverrideShown = false
@@ -861,6 +863,49 @@ extension Home {
             }
         }
 
+        @ViewBuilder var mealButton: some View {
+            Button {
+                isMealSheetPresented = true
+            } label: {
+                VStack(spacing: 2) {
+                    Image(systemName: "fork.knife")
+                        .font(.title3)
+                    Text("Meal")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
+            .sheet(isPresented: $isMealSheetPresented) {
+                MealLogSheet(state: state)
+            }
+        }
+
+        @ViewBuilder var caffeineButton: some View {
+            Button {
+                isCaffeineSheetPresented = true
+            } label: {
+                VStack(spacing: 2) {
+                    Text("☕️")
+                        .font(.title3)
+                    let mg = state.currentCaffeineMg
+                    Text(mg < 1 ? "—" : "\(Int(mg)) mg")
+                        .font(.caption2)
+                        .foregroundStyle(mg < 1 ? .secondary : .primary)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
+            .sheet(isPresented: $isCaffeineSheetPresented) {
+                CaffeineLogSheet(state: state)
+            }
+        }
+
         @ViewBuilder func alertSafetyNotificationsView(geo: GeometryProxy) -> some View {
             ZStack {
                 /// rectangle as background
@@ -942,9 +987,14 @@ extension Home {
                     }
                 }
 
-                HRStressView(state: state)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
+                HStack(spacing: 8) {
+                    HRStressView(state: state)
+                    Spacer()
+                    mealButton
+                    caffeineButton
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
 
                 mealPanel(geo).padding(.top, UIDevice.adjustPadding(min: nil, max: 30))
                     .padding(.bottom, UIDevice.adjustPadding(min: nil, max: 20))
@@ -1005,7 +1055,7 @@ extension Home {
             .onChange(of: scenePhase) { _, newPhase in
                 switch newPhase {
                 case .active:
-                    state.setupHeartRate()
+                    state.startHeartRate()
                 case .background:
                     state.stopHeartRate()
                 default:
