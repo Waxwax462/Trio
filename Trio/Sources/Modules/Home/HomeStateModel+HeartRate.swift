@@ -20,8 +20,6 @@ extension Home.StateModel {
         Task {
             do {
                 try await service.start()
-            } catch HeartRateServiceError.authorizationDenied {
-                debug(.service, "HeartRateService: HealthKit authorization denied")
             } catch HeartRateServiceError.healthKitUnavailable {
                 debug(.service, "HeartRateService: HealthKit not available on this device")
             } catch {

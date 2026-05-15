@@ -64,17 +64,11 @@ final class BaseHeartRateService: HeartRateService, Injectable {
         guard HKHealthStore.isHealthDataAvailable() else {
             throw HeartRateServiceError.healthKitUnavailable
         }
-        let status = healthKitStore.authorizationStatus(for: Self.hrType)
-        if status == .sharingDenied {
-            await MainActor.run { authorizationStatus = .denied }
-            throw HeartRateServiceError.authorizationDenied
-        }
-        if status == .notDetermined {
-            let granted = try await healthKitStore.requestAuthorization(toShare: [], read: [Self.hrType])
-            if !granted {
-                await MainActor.run { authorizationStatus = .denied }
-                throw HeartRateServiceError.authorizationDenied
-            }
+        // Request read authorization if not yet asked. HealthKit doesn't expose
+        // read-denial status to apps (privacy), so we proceed after the prompt
+        // regardless; a denied user simply receives no samples from the query.
+        if healthKitStore.authorizationStatus(for: Self.hrType) == .notDetermined {
+            try await healthKitStore.requestAuthorization(toShare: [], read: [Self.hrType])
         }
         await MainActor.run {
             authorizationStatus = .authorized

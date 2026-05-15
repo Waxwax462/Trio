@@ -25,7 +25,6 @@ enum HRAuthorizationStatus: Sendable {
 
 enum HeartRateServiceError: Error {
     case healthKitUnavailable
-    case authorizationDenied
     case queryFailed(underlying: Error)
 }
 
