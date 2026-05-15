@@ -23,6 +23,13 @@ extension Home {
         @ObservationIgnored @Injected() var bluetoothManager: BluetoothStateManager!
         @ObservationIgnored @Injected() var iobService: IOBService!
 
+        // MARK: - HeartRate (observed — updated by setupHeartRate sink)
+        var currentBPM: Double? = nil
+        var isHRStale: Bool = false
+        var hrStressPoints: [StressPoint] = []
+        var hrAuthorizationStatus: HRAuthorizationStatus = .notDetermined
+        @ObservationIgnored var hrService: (any HeartRateService)?
+
         var cgmStateModel: CGMSettings.StateModel {
             CGMSettings.StateModel.shared
         }
@@ -222,6 +229,9 @@ extension Home {
                     }
                     group.addTask {
                         self.iobService.updateIOB()
+                    }
+                    group.addTask {
+                        self.setupHeartRate()
                     }
                 }
             }

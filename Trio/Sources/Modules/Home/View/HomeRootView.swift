@@ -18,6 +18,7 @@ extension Home {
         @Environment(\.managedObjectContext) var moc
         @Environment(\.colorScheme) var colorScheme
         @Environment(AppState.self) var appState
+        @Environment(\.scenePhase) var scenePhase
 
         @State var state = StateModel()
 
@@ -941,6 +942,10 @@ extension Home {
                     }
                 }
 
+                HRStressView(state: state)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+
                 mealPanel(geo).padding(.top, UIDevice.adjustPadding(min: nil, max: 30))
                     .padding(.bottom, UIDevice.adjustPadding(min: nil, max: 20))
 
@@ -996,6 +1001,16 @@ extension Home {
             }
             .onChange(of: state.hours) {
                 highlightButtons()
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                switch newPhase {
+                case .active:
+                    state.setupHeartRate()
+                case .background:
+                    state.stopHeartRate()
+                default:
+                    break
+                }
             }
             .onAppear {
                 configureView {
