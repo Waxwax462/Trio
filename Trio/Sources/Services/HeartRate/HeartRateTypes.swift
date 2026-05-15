@@ -68,7 +68,7 @@ struct RingBuffer<T>: Sendable where T: Sendable {
 
 // MARK: - Stress derivative
 
-extension [HRSample] {
+extension Array where Element == HRSample {
     /// Computes the numerical first derivative of heart rate over the sample window (BPM/min).
     /// Uses central differences in the interior, forward/backward at the endpoints.
     func stressDerivative() -> [StressPoint] {
