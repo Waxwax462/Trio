@@ -27,7 +27,7 @@ extension Home {
         @State var isCaffeineSheetPresented = false
         @State var isAppleHealthIRSheetPresented = false
         @State var selectedBiometricTile: BiometricTile? = nil
-        @State var isMealSheetPresented = false
+
         @State var isChatSheetPresented = false
         @State var showCancelAlert = false
         @State var showCancelConfirmDialog = false
@@ -891,26 +891,6 @@ extension Home {
             .buttonStyle(.plain)
         }
 
-        @ViewBuilder var mealButton: some View {
-            Button {
-                isMealSheetPresented = true
-            } label: {
-                VStack(spacing: 2) {
-                    Image(systemName: "fork.knife")
-                        .font(.title3)
-                    Text("Meal")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
-            }
-            .buttonStyle(.plain)
-            .sheet(isPresented: $isMealSheetPresented) {
-                MealLogSheet(state: state)
-            }
-        }
 
         @ViewBuilder var caffeineButton: some View {
             Button {
@@ -1134,7 +1114,6 @@ extension Home {
                     HRStressView(state: state)
                     Spacer()
                     sickDayButton
-                    mealButton
                     caffeineButton
                     appleHealthIRButton
                     chatButton
