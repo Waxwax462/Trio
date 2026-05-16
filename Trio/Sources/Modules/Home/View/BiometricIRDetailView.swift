@@ -18,7 +18,7 @@ enum BiometricTile: String, Identifiable, Hashable {
         case .hrv: return .hrv
         case .sleep: return .sleep
         case .exercise: return .exercise
-        case .bpm: return .hrv  // BPM is contextually linked to HRV-based IR
+        case .bpm: return .hrv
         }
     }
 
@@ -76,26 +76,48 @@ struct BiometricIRDetailView: View {
 
     private var effectSection: some View {
         Section {
-            HStack(spacing: 16) {
-                Image(systemName: tile.systemImage)
-                    .font(.title)
-                    .foregroundStyle(deltaColor(currentDelta))
-                    .frame(width: 44)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(currentValueLabel)
-                        .font(.system(.title3, design: .rounded, weight: .semibold))
-                    Text(tile.displayName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+            VStack(spacing: 12) {
+                HStack(spacing: 16) {
+                    ZStack {
+                        Circle()
+                            .fill(deltaAccentColor(currentDelta).opacity(0.15))
+                            .frame(width: 56, height: 56)
+                        Image(systemName: tile.systemImage)
+                            .font(.title2)
+                            .foregroundStyle(deltaAccentColor(currentDelta))
+                    }
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(currentValueLabel)
+                            .font(.system(.title3, design: .rounded, weight: .semibold))
+                        Text(tile.displayName)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text(deltaLabel(currentDelta))
+                            .font(.system(.title2, design: .rounded, weight: .bold))
+                            .foregroundStyle(deltaColor(currentDelta))
+                        Text("IR Effect")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
-                Spacer()
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text(deltaLabel(currentDelta))
-                        .font(.system(.title2, design: .rounded, weight: .bold))
-                        .foregroundStyle(deltaColor(currentDelta))
-                    Text("IR Effect")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+
+                if abs(currentDelta) >= 0.5 {
+                    HStack(spacing: 8) {
+                        Image(systemName: currentDelta > 0 ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
+                            .foregroundStyle(deltaAccentColor(currentDelta))
+                        Text(currentDelta > 0
+                             ? "Insulin needs may be higher than usual"
+                             : "Insulin sensitivity is improved")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                    }
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, 10)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
                 }
             }
             .padding(.vertical, 6)
@@ -113,14 +135,23 @@ struct BiometricIRDetailView: View {
         Section("Thresholds") {
             ForEach(thresholds, id: \.range) { item in
                 HStack {
+                    if item.isCurrent {
+                        Image(systemName: "chevron.right")
+                            .font(.caption2)
+                            .foregroundStyle(Color.accentColor)
+                            .frame(width: 14)
+                    } else {
+                        Color.clear.frame(width: 14)
+                    }
                     Text(item.range)
                         .font(.subheadline)
+                        .fontWeight(item.isCurrent ? .semibold : .regular)
                     Spacer()
                     Text(item.effect)
                         .font(.system(.subheadline, design: .rounded, weight: .medium))
                         .foregroundStyle(thresholdColor(item.effect))
                 }
-                .listRowBackground(item.isCurrent ? Color.accentColor.opacity(0.12) : Color.clear)
+                .listRowBackground(item.isCurrent ? Color.accentColor.opacity(0.10) : Color.clear)
             }
         }
     }
@@ -209,18 +240,18 @@ struct BiometricIRDetailView: View {
         case .sleep:
             let sl = state.sleepHours
             return [
-                ThresholdItem(range: "< 5 h",   effect: "+20% IR",    isCurrent: sl.map { $0 < 5 } ?? false),
-                ThresholdItem(range: "5 – 7 h", effect: "+5 – 15% IR",isCurrent: sl.map { $0 >= 5 && $0 < 7 } ?? false),
-                ThresholdItem(range: "7 – 9 h", effect: "None",        isCurrent: sl.map { $0 >= 7 && $0 <= 9 } ?? false),
-                ThresholdItem(range: "> 9 h",   effect: "None",        isCurrent: sl.map { $0 > 9 } ?? false)
+                ThresholdItem(range: "< 5 h",   effect: "+20% IR",     isCurrent: sl.map { $0 < 5 } ?? false),
+                ThresholdItem(range: "5 – 7 h", effect: "+5 – 15% IR", isCurrent: sl.map { $0 >= 5 && $0 < 7 } ?? false),
+                ThresholdItem(range: "7 – 9 h", effect: "None",         isCurrent: sl.map { $0 >= 7 && $0 <= 9 } ?? false),
+                ThresholdItem(range: "> 9 h",   effect: "None",         isCurrent: sl.map { $0 > 9 } ?? false)
             ]
         case .exercise:
             let ex = (state.exerciseHours ?? 0) * 60
             return [
-                ThresholdItem(range: "< 20 min",      effect: "None",    isCurrent: ex < 20),
-                ThresholdItem(range: "20 – 59 min",   effect: "−5% IR",  isCurrent: ex >= 20 && ex < 60),
-                ThresholdItem(range: "60 – 119 min",  effect: "−10% IR", isCurrent: ex >= 60 && ex < 120),
-                ThresholdItem(range: "≥ 120 min",     effect: "−15% IR", isCurrent: ex >= 120)
+                ThresholdItem(range: "< 20 min",     effect: "None",    isCurrent: ex < 20),
+                ThresholdItem(range: "20 – 59 min",  effect: "−5% IR",  isCurrent: ex >= 20 && ex < 60),
+                ThresholdItem(range: "60 – 119 min", effect: "−10% IR", isCurrent: ex >= 60 && ex < 120),
+                ThresholdItem(range: "≥ 120 min",    effect: "−15% IR", isCurrent: ex >= 120)
             ]
         }
     }
@@ -235,6 +266,11 @@ struct BiometricIRDetailView: View {
     private func deltaColor(_ pct: Double) -> AnyShapeStyle {
         if abs(pct) < 0.5 { return AnyShapeStyle(Color.secondary) }
         return pct > 0 ? AnyShapeStyle(Color.orange) : AnyShapeStyle(Color.green)
+    }
+
+    private func deltaAccentColor(_ pct: Double) -> Color {
+        if abs(pct) < 0.5 { return .secondary }
+        return pct > 0 ? .orange : .green
     }
 
     private func thresholdColor(_ effect: String) -> AnyShapeStyle {

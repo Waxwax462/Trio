@@ -1023,10 +1023,27 @@ extension Home {
         @ViewBuilder private func biometricTileButton(tile: BiometricTile, label: String, icon: String) -> some View {
             let delta = tile.irSource.flatMap { state.appleHealthIRService?.currentDeltas.delta(for: $0) } ?? 0
             let hasEffect = abs(delta) >= 0.5
+            let accentColor: Color = hasEffect ? (delta > 0 ? .orange : .green) : .secondary
             Button { selectedBiometricTile = tile } label: {
-                Label(label, systemImage: icon)
-                    .font(.caption)
-                    .foregroundStyle(hasEffect ? (delta > 0 ? AnyShapeStyle(Color.orange) : AnyShapeStyle(Color.green)) : AnyShapeStyle(Color.secondary))
+                VStack(spacing: 2) {
+                    Label(label, systemImage: icon)
+                        .font(.caption2)
+                        .fontWeight(.medium)
+                        .foregroundStyle(accentColor)
+                    if hasEffect {
+                        Text(String(format: "%+.0f%% IR", delta))
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundStyle(accentColor)
+                    }
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 5)
+                .background(
+                    hasEffect
+                        ? AnyShapeStyle(accentColor.opacity(0.12))
+                        : AnyShapeStyle(.ultraThinMaterial),
+                    in: RoundedRectangle(cornerRadius: 10)
+                )
             }
             .buttonStyle(.plain)
         }

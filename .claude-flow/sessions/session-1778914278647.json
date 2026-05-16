@@ -1,0 +1,14 @@
+{
+  "id": "session-1778914278647",
+  "startedAt": "2026-05-16T06:51:18.647Z",
+  "cwd": "/opt/loop/Trio",
+  "context": {},
+  "metrics": {
+    "edits": 0,
+    "commands": 0,
+    "tasks": 0,
+    "errors": 0
+  },
+  "endedAt": "2026-05-16T07:01:58.565Z",
+  "duration": 639918
+}
