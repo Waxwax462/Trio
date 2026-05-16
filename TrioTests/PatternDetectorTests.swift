@@ -25,8 +25,8 @@ struct PatternDetectorTests {
         (date: date(dayOffset: dayOffset, hour: hour), glucose: mgdL)
     }
 
-    private func meal(dayOffset: Int, hour: Int) -> (date: Date) {
-        (date: date(dayOffset: dayOffset, hour: hour))
+    private func meal(dayOffset: Int, hour: Int) -> Date {
+        date(dayOffset: dayOffset, hour: hour)
     }
 
     // MARK: - Empty / insufficient data
@@ -138,11 +138,11 @@ struct PatternDetectorTests {
     @Test("Glucose spike ≥ 40 mg/dL within 60 min on 3+ distinct days → postMealSpike detected")
     func testPostMealSpike_3Days() {
         var samples: [(date: Date, glucose: Double)] = []
-        var meals: [(date: Date)] = []
+        var meals: [Date] = []
 
         for day in 0 ..< 4 {
             let mealTime = date(dayOffset: day, hour: 12)
-            meals.append((date: mealTime))
+            meals.append(mealTime)
             // Pre-meal reading
             samples.append((date: mealTime, glucose: 100))
             // Post-meal spike
@@ -167,11 +167,11 @@ struct PatternDetectorTests {
         // 3 meals on the same day, each spiking — should not satisfy minDayCount of 3 distinct days
         let day0 = date(dayOffset: 0, hour: 0)
         var samples: [(date: Date, glucose: Double)] = []
-        var meals: [(date: Date)] = []
+        var meals: [Date] = []
 
         for hour in [8, 12, 18] {
             let mealTime = day0.addingTimeInterval(Double(hour) * 3_600)
-            meals.append((date: mealTime))
+            meals.append(mealTime)
             samples.append((date: mealTime, glucose: 100))
             samples.append((date: mealTime.addingTimeInterval(2_400), glucose: 145))
         }
@@ -188,11 +188,11 @@ struct PatternDetectorTests {
     @Test("Post-meal rise below spikeRiseMgDl threshold → not flagged")
     func testPostMealSpike_smallRise_notFlagged() {
         var samples: [(date: Date, glucose: Double)] = []
-        var meals: [(date: Date)] = []
+        var meals: [Date] = []
 
         for day in 0 ..< 4 {
             let mealTime = date(dayOffset: day, hour: 12)
-            meals.append((date: mealTime))
+            meals.append(mealTime)
             samples.append((date: mealTime, glucose: 100))
             // Rise of only 20 mg/dL — below spikeRiseMgDl (40)
             samples.append((date: mealTime.addingTimeInterval(2_400), glucose: 120))
@@ -212,14 +212,14 @@ struct PatternDetectorTests {
     @Test("Consistent high and post-meal spike can both be detected simultaneously")
     func testMultiplePatterns_coexist() {
         var samples: [(date: Date, glucose: Double)] = []
-        var meals: [(date: Date)] = []
+        var meals: [Date] = []
 
         for day in 0 ..< 4 {
             // Consistent high at 3 AM
             samples.append(sample(dayOffset: day, hour: 3, mgdL: 210))
             // Post-meal spike at lunch
             let mealTime = date(dayOffset: day, hour: 12)
-            meals.append((date: mealTime))
+            meals.append(mealTime)
             samples.append((date: mealTime, glucose: 100))
             samples.append((date: mealTime.addingTimeInterval(2_400), glucose: 150))
         }

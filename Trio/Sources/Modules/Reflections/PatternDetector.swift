@@ -28,7 +28,7 @@ enum PatternDetector {
     /// - Returns: Array of `DetectedPattern`, deduplicated, sorted by occurrence count descending.
     static func detect(
         glucoseSamples: [(date: Date, glucose: Double)],
-        carbEntries: [(date: Date)]
+        carbEntries: [Date]
     ) -> [DetectedPattern] {
         guard !glucoseSamples.isEmpty else { return [] }
 
@@ -134,7 +134,7 @@ enum PatternDetector {
 
     private static func detectPostMealSpikes(
         samples: [(date: Date, glucose: Double)],
-        carbEntries: [(date: Date)]
+        carbEntries: [Date]
     ) -> [DetectedPattern] {
         guard !carbEntries.isEmpty else { return [] }
 
@@ -142,19 +142,19 @@ enum PatternDetector {
         var spikeDays: Set<String> = []
         var spikeMagnitudes: [Double] = []
 
-        for meal in carbEntries {
+        for mealDate in carbEntries {
             // Find glucose reading closest to (but at or after) meal time.
-            guard let baseReading = samples.first(where: { $0.date >= meal.date }) else { continue }
-            let windowEnd = meal.date.addingTimeInterval(3_600) // 60 min
+            guard let baseReading = samples.first(where: { $0.date >= mealDate }) else { continue }
+            let windowEnd = mealDate.addingTimeInterval(3_600) // 60 min
 
-            let windowSamples = samples.filter { $0.date > meal.date && $0.date <= windowEnd }
+            let windowSamples = samples.filter { $0.date > mealDate && $0.date <= windowEnd }
             guard !windowSamples.isEmpty else { continue }
 
             let peakGlucose = windowSamples.map(\.glucose).max() ?? baseReading.glucose
             let rise = peakGlucose - baseReading.glucose
 
             if rise >= spikeRiseMgDl {
-                let c = calendar.dateComponents([.year, .month, .day], from: meal.date)
+                let c = calendar.dateComponents([.year, .month, .day], from: mealDate)
                 if let y = c.year, let m = c.month, let d = c.day {
                     spikeDays.insert("\(y)-\(m)-\(d)")
                 }

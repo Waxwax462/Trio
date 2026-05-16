@@ -74,12 +74,11 @@ extension Reflections {
                 carbFR.predicate = NSPredicate(format: "date >= %@ AND isFPU == NO", startDate as NSDate)
                 carbFR.sortDescriptors = [NSSortDescriptor(keyPath: \CarbEntryStored.date, ascending: true)]
 
-                let carbEntries: [(date: Date)]
+                let carbEntries: [Date]
                 do {
                     let stored = try context.fetch(carbFR)
-                    carbEntries = stored.compactMap { entry -> (date: Date)? in
-                        guard let date = entry.date else { return nil }
-                        return (date: date)
+                    carbEntries = stored.compactMap { entry -> Date? in
+                        entry.date
                     }
                 } catch {
                     debug(.default, "PatternDetector: failed to fetch carbs: \(error)")
