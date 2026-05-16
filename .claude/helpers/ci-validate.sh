@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ci-validate.sh — Trigger and monitor GitHub Actions unit_tests.yml
+# ci-validate.sh — Trigger and monitor GitHub Actions build_trio.yml
 # Usage:
 #   ci-validate.sh trigger [branch]   — fire workflow_dispatch, save run ID
 #   ci-validate.sh check              — check saved run status, exit 0=pass 1=fail 2=still running
@@ -9,7 +9,7 @@
 set -euo pipefail
 
 REPO="Waxwax462/Trio"
-WORKFLOW="unit_tests.yml"
+WORKFLOW="build_trio.yml"
 TRIO_DIR="${CLAUDE_PROJECT_DIR:-.}/Trio"
 STATE_FILE="${CLAUDE_PROJECT_DIR:-.}/.claude-flow/ci-run-id"
 DEFAULT_TIMEOUT=900  # 15 minutes
