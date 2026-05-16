@@ -113,7 +113,7 @@ extension Chat {
                 } label: {
                     Image(systemName: "arrow.up.circle.fill")
                         .font(.title2)
-                        .foregroundStyle(state.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || state.isStreaming ? .secondary : .blue)
+                        .foregroundStyle(state.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || state.isStreaming ? Color.secondary : Color.blue)
                 }
                 .disabled(state.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || state.isStreaming)
             }
