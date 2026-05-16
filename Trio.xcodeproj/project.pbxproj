@@ -4983,6 +4983,11 @@
 				8194B80890CDD6A3C13B0FEE /* SnoozeStateModel.swift in Sources */,
 				BDA25EE42D260CD500035F34 /* AppleWatchManager.swift in Sources */,
 				0437CE46C12535A56504EC19 /* SnoozeRootView.swift in Sources */,
+				FF770003 /* LLMService.swift in Sources */,
+				CC4400000007000000000001 /* ChatDataFlow.swift in Sources */,
+				CC4400000008000000000001 /* ChatStateModel.swift in Sources */,
+				CC4400000009000000000001 /* HomeStateModel+Chat.swift in Sources */,
+				CC440000000A000000000001 /* ChatRootView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
