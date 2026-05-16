@@ -26,7 +26,7 @@ extension Home.StateModel {
             self.hrv = s.hrv
             self.sleepHours = s.sleepHours
             self.biometricsAuthStatus = s.authorizationStatus
-            self.appleHealthIRService?.update(sleepHours: s.sleepHours, stepCount: s.stepCount, hrv: s.hrv)
+            self.appleHealthIRService?.update(sleepHours: s.sleepHours, stepCount: s.stepCount, hrv: s.hrv, exerciseHours: s.exerciseHours)
         }
     }
 

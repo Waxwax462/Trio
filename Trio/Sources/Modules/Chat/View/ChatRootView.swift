@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 extension Chat {
     struct RootView: View {
