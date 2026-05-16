@@ -25,7 +25,9 @@ extension Home {
         @State var settingsPath = NavigationPath()
         @State var isStatusPopupPresented = false
         @State var isCaffeineSheetPresented = false
+        @State var isAppleHealthIRSheetPresented = false
         @State var isMealSheetPresented = false
+        @State var isChatSheetPresented = false
         @State var showCancelAlert = false
         @State var showCancelConfirmDialog = false
         @State var isConfirmStopOverrideShown = false
@@ -34,6 +36,7 @@ extension Home {
         @State var isMenuPresented = false
         @State var showTreatments = false
         @State var selectedTab: Int = 0
+        @State var previousTab: Int = 0
         @State var showPumpSelection: Bool = false
         @State var showCGMSelection: Bool = false
         @State var notificationsDisabled = false
@@ -932,6 +935,57 @@ extension Home {
             }
         }
 
+        @ViewBuilder var appleHealthIRButton: some View {
+            Button {
+                isAppleHealthIRSheetPresented = true
+            } label: {
+                VStack(spacing: 2) {
+                    Image(systemName: "figure.walk")
+                        .font(.title3)
+                        .foregroundStyle(irButtonColor)
+                    let pct = (state.appleHealthIRMultiplier - 1.0) * 100
+                    Text(abs(pct) < 1 ? "IR" : String(format: "%+.0f%%", pct))
+                        .font(.caption2)
+                        .foregroundStyle(irButtonColor)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
+            .sheet(isPresented: $isAppleHealthIRSheetPresented) {
+                AppleHealthIRSheet(state: state)
+            }
+        }
+
+        private var irButtonColor: AnyShapeStyle {
+            let pct = (state.appleHealthIRMultiplier - 1.0) * 100
+            if abs(pct) < 1 { return AnyShapeStyle(.secondary) }
+            if pct > 0 { return AnyShapeStyle(Color.orange) }
+            return AnyShapeStyle(Color.green)
+        }
+
+        @ViewBuilder var chatButton: some View {
+            Button {
+                isChatSheetPresented = true
+            } label: {
+                VStack(spacing: 2) {
+                    Image(systemName: "bubble.left.and.bubble.right")
+                        .font(.title3)
+                    Text("AI")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
+            .sheet(isPresented: $isChatSheetPresented) {
+                Chat.RootView(context: state.chatContext)
+            }
+        }
+
         @ViewBuilder var biometricsRow: some View {
             if state.biometricsAuthStatus == .denied {
                 Text("Biometrics unavailable — check Health permissions")
@@ -1052,6 +1106,8 @@ extension Home {
                     sickDayButton
                     mealButton
                     caffeineButton
+                    appleHealthIRButton
+                    chatButton
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
@@ -1246,7 +1302,9 @@ extension Home {
                                 systemImage: "sparkles"
                             ) }.tag(2)
 
-                    Spacer()
+                    Color.clear
+                        .tabItem { Label("", systemImage: "circle") }
+                        .tag(99)
 
                     NavigationStack { Adjustments.RootView(resolver: resolver) }
                         .tabItem {
@@ -1277,6 +1335,12 @@ extension Home {
                 )
             }.ignoresSafeArea(.keyboard, edges: .bottom).blur(radius: state.waitForSuggestion ? 8 : 0)
                 .onChange(of: selectedTab) {
+                    if selectedTab == 99 {
+                        selectedTab = previousTab
+                        state.showModal(for: .treatmentView)
+                    } else {
+                        previousTab = selectedTab
+                    }
                     if !settingsPath.isEmpty {
                         settingsPath = NavigationPath()
                     }

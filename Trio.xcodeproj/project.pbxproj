@@ -225,6 +225,11 @@
 		EE5500000009000000000001 /* ReflectionsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5500000005000000000001 /* ReflectionsProvider.swift */; };
 		EE550000000A000000000001 /* ReflectionsStateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5500000006000000000001 /* ReflectionsStateModel.swift */; };
 		EE550000000B000000000001 /* ReflectionsRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5500000007000000000001 /* ReflectionsRootView.swift */; };
+		FF770003 /* LLMService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF770002 /* LLMService.swift */; };
+		CC4400000007000000000001 /* ChatDataFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4400000003000000000001 /* ChatDataFlow.swift */; };
+		CC4400000008000000000001 /* ChatStateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4400000004000000000001 /* ChatStateModel.swift */; };
+		CC4400000009000000000001 /* HomeStateModel+Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4400000005000000000001 /* HomeStateModel+Chat.swift */; };
+		CC440000000A000000000001 /* ChatRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4400000006000000000001 /* ChatRootView.swift */; };
 		3B47C6102DA0A28F00B0E5EF /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 3B47C60F2DA0A28F00B0E5EF /* FirebaseCrashlytics */; };
 		3B4BA76A2D8DBD690069D5B8 /* CGMBLEKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B4BA75B2D8DBD690069D5B8 /* CGMBLEKit.framework */; };
 		3B4BA76B2D8DBD690069D5B8 /* CGMBLEKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3B4BA75B2D8DBD690069D5B8 /* CGMBLEKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -1107,6 +1112,11 @@
 		EE5500000005000000000001 /* ReflectionsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionsProvider.swift; sourceTree = "<group>"; };
 		EE5500000006000000000001 /* ReflectionsStateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionsStateModel.swift; sourceTree = "<group>"; };
 		EE5500000007000000000001 /* ReflectionsRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionsRootView.swift; sourceTree = "<group>"; };
+		FF770002 /* LLMService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMService.swift; sourceTree = "<group>"; };
+		CC4400000003000000000001 /* ChatDataFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatDataFlow.swift; sourceTree = "<group>"; };
+		CC4400000004000000000001 /* ChatStateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatStateModel.swift; sourceTree = "<group>"; };
+		CC4400000005000000000001 /* HomeStateModel+Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeStateModel+Chat.swift"; sourceTree = "<group>"; };
+		CC4400000006000000000001 /* ChatRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatRootView.swift; sourceTree = "<group>"; };
 		3B4BA75B2D8DBD690069D5B8 /* CGMBLEKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CGMBLEKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B4BA75C2D8DBD690069D5B8 /* CGMBLEKitUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CGMBLEKitUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B4BA75D2D8DBD690069D5B8 /* DanaKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = DanaKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1964,6 +1974,7 @@
 				E592A3762CEEC038009A472C /* ContactImage */,
 				9E56E3626FAD933385101B76 /* History */,
 				EE5500000001000000000001 /* Reflections */,
+				CC4400000001000000000001 /* Chat */,
 				195D80B22AF696EE00D25097 /* DynamicSettings */,
 				C2AA6CF52E1A734A00BF6C16 /* SettingsExport */,
 				DD17454C2C55CA0200211FAC /* GeneralSettings */,
@@ -2067,6 +2078,7 @@
 				FF660003 /* HomeStateModel+Biometrics.swift */,
 				CC3300000004000000000001 /* HomeStateModel+Meal.swift */,
 				DD4400000004000000000001 /* HomeStateModel+SickDay.swift */,
+				CC4400000005000000000001 /* HomeStateModel+Chat.swift */,
 				58645B972CA2D16A008AFCE7 /* HomeStateModel+Setup */,
 				3811DE2C25C9D49500A708ED /* View */,
 			);
@@ -2124,6 +2136,7 @@
 				BB2200000001000000000001 /* Caffeine */,
 				FF660005 /* Biometrics */,
 				CC3300000001000000000001 /* Meal */,
+				FF770001 /* LLM */,
 				3BF85FE22E427312000D7351 /* IOB */,
 				6B1A8D2C2B156EC100E76752 /* LiveActivity */,
 				3811DE9425C9D88200A708ED /* Network */,
@@ -2924,6 +2937,32 @@
 			isa = PBXGroup;
 			children = (
 				EE5500000007000000000001 /* ReflectionsRootView.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		FF770001 /* LLM */ = {
+			isa = PBXGroup;
+			children = (
+				FF770002 /* LLMService.swift */,
+			);
+			path = LLM;
+			sourceTree = "<group>";
+		};
+		CC4400000001000000000001 /* Chat */ = {
+			isa = PBXGroup;
+			children = (
+				CC4400000003000000000001 /* ChatDataFlow.swift */,
+				CC4400000004000000000001 /* ChatStateModel.swift */,
+				CC4400000002000000000001 /* View */,
+			);
+			path = Chat;
+			sourceTree = "<group>";
+		};
+		CC4400000002000000000001 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				CC4400000006000000000001 /* ChatRootView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";

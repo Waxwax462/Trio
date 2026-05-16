@@ -18,6 +18,9 @@ final class ServiceAssembly: Assembly {
         container.register(HKHealthStore.self) { _ in HKHealthStore() }
         container.register(HeartRateService.self) { r in BaseHeartRateService(resolver: r) }.inObjectScope(.container)
         container.register(CaffeineService.self) { _ in BaseCaffeineService() }.inObjectScope(.container)
+        container.register(AppleHealthIRService.self) { _ in
+            BaseAppleHealthIRService()
+        }.inObjectScope(.container)
         container.register(BiometricsService.self) { _ in BiometricsService() }.inObjectScope(.container)
         container.register(HealthKitManager.self) { r in BaseHealthKitManager(resolver: r) }
         container.register(UserNotificationsManager.self) { r in BaseUserNotificationsManager(resolver: r) }

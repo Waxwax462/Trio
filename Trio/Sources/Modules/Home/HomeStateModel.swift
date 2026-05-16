@@ -35,6 +35,10 @@ extension Home {
         var caffeineIRMultiplier: Double = 1.0
         @ObservationIgnored var caffeineService: (any CaffeineService)?
 
+        // MARK: - Apple Health IR (observed — updated by setupAppleHealthIR sink)
+        var appleHealthIRMultiplier: Double = 1.0
+        @ObservationIgnored var appleHealthIRService: (any AppleHealthIRService)?
+
         // MARK: - Biometrics (observed — updated by setupBiometrics sink)
         @ObservationIgnored var biometricsService: BiometricsService?
         var stepCount: Int = 0
@@ -250,6 +254,9 @@ extension Home {
                     }
                     group.addTask {
                         self.setupBiometrics()
+                    }
+                    group.addTask {
+                        self.setupAppleHealthIR()
                     }
                 }
             }
