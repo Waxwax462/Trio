@@ -44,6 +44,7 @@ extension Home {
         var stepCount: Int = 0
         var hrv: Double? = nil
         var sleepHours: Double? = nil
+        var exerciseHours: Double? = nil
         var biometricsAuthStatus: BiometricsAuthorizationStatus = .notDetermined
 
         var cgmStateModel: CGMSettings.StateModel {

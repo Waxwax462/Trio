@@ -26,6 +26,7 @@ extension Home {
         @State var isStatusPopupPresented = false
         @State var isCaffeineSheetPresented = false
         @State var isAppleHealthIRSheetPresented = false
+        @State var selectedBiometricTile: BiometricTile? = nil
         @State var isMealSheetPresented = false
         @State var isChatSheetPresented = false
         @State var showCancelAlert = false
@@ -992,28 +993,42 @@ extension Home {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             } else {
-                let hasData = state.stepCount > 0 || state.hrv != nil || state.sleepHours != nil
+                let hasData = state.stepCount > 0 || state.hrv != nil || state.sleepHours != nil ||
+                    state.exerciseHours != nil || state.currentBPM != nil
                 if hasData {
-                    HStack(spacing: 16) {
-                        Label(
-                            state.stepCount > 0
-                                ? "\(state.stepCount.formatted()) steps"
-                                : "— steps",
-                            systemImage: "shoe.fill"
-                        )
-                        Label(
-                            state.hrv.map { "\(Int($0)) ms" } ?? "— ms",
-                            systemImage: "waveform.path.ecg"
-                        )
-                        Label(
-                            state.sleepHours.map { String(format: "%.1f h", $0) } ?? "— h",
-                            systemImage: "bed.double.fill"
-                        )
+                    HStack(spacing: 10) {
+                        if state.stepCount > 0 {
+                            biometricTileButton(tile: .steps, label: state.stepCount.formatted(), icon: "shoe.fill")
+                        }
+                        if let bpm = state.currentBPM {
+                            biometricTileButton(tile: .bpm, label: String(format: "%.0f BPM", bpm), icon: "heart.fill")
+                        }
+                        if let hrv = state.hrv {
+                            biometricTileButton(tile: .hrv, label: "\(Int(hrv)) ms", icon: "waveform.path.ecg")
+                        }
+                        if let sl = state.sleepHours {
+                            biometricTileButton(tile: .sleep, label: String(format: "%.1f h", sl), icon: "bed.double.fill")
+                        }
+                        if let ex = state.exerciseHours {
+                            biometricTileButton(tile: .exercise, label: String(format: "%.0f min", ex * 60), icon: "figure.run")
+                        }
                     }
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .sheet(item: $selectedBiometricTile) { tile in
+                        BiometricIRDetailView(tile: tile, state: state)
+                    }
                 }
             }
+        }
+
+        @ViewBuilder private func biometricTileButton(tile: BiometricTile, label: String, icon: String) -> some View {
+            let delta = tile.irSource.flatMap { state.appleHealthIRService?.currentDeltas.delta(for: $0) } ?? 0
+            let hasEffect = abs(delta) >= 0.5
+            Button { selectedBiometricTile = tile } label: {
+                Label(label, systemImage: icon)
+                    .font(.caption)
+                    .foregroundStyle(hasEffect ? (delta > 0 ? AnyShapeStyle(Color.orange) : AnyShapeStyle(Color.green)) : AnyShapeStyle(Color.secondary))
+            }
+            .buttonStyle(.plain)
         }
 
         @ViewBuilder func alertSafetyNotificationsView(geo: GeometryProxy) -> some View {

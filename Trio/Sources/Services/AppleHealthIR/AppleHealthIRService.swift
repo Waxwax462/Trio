@@ -1,11 +1,36 @@
 import Combine
 import Foundation
 
+// MARK: - Deltas
+
+/// The most-recently computed per-source IR delta percentages.
+/// Positive = increased resistance, negative = decreased. Zero = no effect.
+struct AppleHealthIRDeltas: Sendable {
+    var sleep: Double = 0
+    var steps: Double = 0
+    var hrv: Double = 0
+    var exercise: Double = 0
+
+    var combined: Double { sleep + steps + hrv + exercise }
+
+    /// Returns the delta for a given source — used by UI to avoid switch statements.
+    func delta(for source: AppleHealthIRSource) -> Double {
+        switch source {
+        case .sleep: return sleep
+        case .steps: return steps
+        case .hrv: return hrv
+        case .exercise: return exercise
+        }
+    }
+}
+
 // MARK: - Protocol
 
 protocol AppleHealthIRService: AnyObject {
     /// All logged snapshots, newest first, pruned to last 24 hours.
     var entries: [AppleHealthIREntry] { get }
+    /// The most recently computed per-source deltas. Updated on every `update()` call.
+    var currentDeltas: AppleHealthIRDeltas { get }
     /// Combined multiplier: 1.0 = no effect, 1.20 = 20% more resistance, 0.92 = 8% less resistance.
     /// Hard floor of 0.5 — algorithm cannot receive a multiplier below that.
     var insulinResistanceMultiplier: Double { get }
@@ -14,13 +39,14 @@ protocol AppleHealthIRService: AnyObject {
 
     /// Called by HomeStateModel+Biometrics whenever BiometricsService fires.
     /// Each call generates fresh snapshot entries and recomputes the multiplier.
-    func update(sleepHours: Double?, stepCount: Int, hrv: Double?)
+    func update(sleepHours: Double?, stepCount: Int, hrv: Double?, exerciseHours: Double?)
 }
 
 // MARK: - Implementation
 
 final class BaseAppleHealthIRService: AppleHealthIRService {
     private(set) var entries: [AppleHealthIREntry] = []
+    private(set) var currentDeltas = AppleHealthIRDeltas()
     private(set) var insulinResistanceMultiplier: Double = 1.0
 
     var updatePublisher: AnyPublisher<Void, Never> { subject.eraseToAnyPublisher() }
@@ -36,12 +62,13 @@ final class BaseAppleHealthIRService: AppleHealthIRService {
 
     // MARK: - Public
 
-    func update(sleepHours: Double?, stepCount: Int, hrv: Double?) {
+    func update(sleepHours: Double?, stepCount: Int, hrv: Double?, exerciseHours: Double?) {
         let now = Date()
 
         let sleepDelta = Self.computeSleepDelta(sleepHours)
         let stepsDelta = Self.computeStepsDelta(stepCount)
         let hrvDelta = Self.computeHRVDelta(hrv)
+        let exerciseDelta = Self.computeExerciseDelta(exerciseHours)
 
         // Build one entry per non-zero source so every adjustment is individually traceable.
         var newEntries: [AppleHealthIREntry] = []
@@ -73,14 +100,25 @@ final class BaseAppleHealthIRService: AppleHealthIRService {
             ))
         }
 
+        if exerciseDelta != 0.0, let exHours = exerciseHours {
+            newEntries.append(AppleHealthIREntry(
+                timestamp: now,
+                source: .exercise,
+                irDeltaPercent: exerciseDelta,
+                details: String(format: "Exercise: %.0f min → %+.1f%% IR", exHours * 60, exerciseDelta)
+            ))
+        }
+
         // Prepend newest entries, then prune window.
         entries = newEntries + entries
         prune()
 
+        // Snapshot current deltas so UI can read them without re-running math.
+        currentDeltas = AppleHealthIRDeltas(sleep: sleepDelta, steps: stepsDelta, hrv: hrvDelta, exercise: exerciseDelta)
+
         // Recompute multiplier from live deltas (not from accumulated entries).
-        let combinedDelta = sleepDelta + stepsDelta + hrvDelta
         // Hard floor 0.5 — insulin delivery can never be more than halved.
-        insulinResistanceMultiplier = max(0.5, 1.0 + combinedDelta / 100.0)
+        insulinResistanceMultiplier = max(0.5, 1.0 + currentDeltas.combined / 100.0)
 
         save()
         subject.send()
@@ -142,6 +180,27 @@ final class BaseAppleHealthIRService: AppleHealthIRService {
             return 0.0
         } else {
             return -5.0
+        }
+    }
+
+    /// Exercise-driven IR delta (uses Apple Exercise Minutes from HealthKit).
+    /// Exercise improves insulin sensitivity, so all non-zero deltas are negative.
+    /// - nil / 0 min     → 0% (no exercise data recorded today).
+    /// - < 20 min        → 0% (below Apple's official "exercise" threshold; treated as incidental).
+    /// - 20–59 min       → -5% IR (one moderate session).
+    /// - 60–119 min      → -10% IR (substantial training load).
+    /// - ≥ 120 min       → -15% IR (heavy training day; effect capped here).
+    private static func computeExerciseDelta(_ exerciseHours: Double?) -> Double {
+        guard let h = exerciseHours else { return 0.0 }
+        let minutes = h * 60
+        if minutes < 20 {
+            return 0.0
+        } else if minutes < 60 {
+            return -5.0
+        } else if minutes < 120 {
+            return -10.0
+        } else {
+            return -15.0
         }
     }
 

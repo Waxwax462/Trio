@@ -12,8 +12,12 @@ extension Home.StateModel {
                 self.stepCount = s.stepCount
                 self.hrv = s.hrv
                 self.sleepHours = s.sleepHours
+                self.exerciseHours = s.exerciseHours
                 self.biometricsAuthStatus = s.authorizationStatus
-                self.appleHealthIRService?.update(sleepHours: s.sleepHours, stepCount: s.stepCount, hrv: s.hrv)
+                self.appleHealthIRService?.update(
+                    sleepHours: s.sleepHours, stepCount: s.stepCount,
+                    hrv: s.hrv, exerciseHours: s.exerciseHours
+                )
             }
             .store(in: &lifetime)
         Task { @MainActor [weak self] in

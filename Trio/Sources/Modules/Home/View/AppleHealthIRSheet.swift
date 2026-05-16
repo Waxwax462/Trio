@@ -9,8 +9,9 @@ struct AppleHealthIRSheet: View {
             List {
                 combinedEffectSection
                 breakdownSection
-                if !(state.appleHealthIRService?.entries.isEmpty ?? true) {
-                    recentSnapshotsSection
+                let entries = state.appleHealthIRService?.entries ?? []
+                if !entries.isEmpty {
+                    recentSnapshotsSection(entries)
                 }
             }
             .navigationTitle("Health IR")
@@ -25,9 +26,10 @@ struct AppleHealthIRSheet: View {
 
     // MARK: - Sections
 
-    /// Top summary: combined multiplier rendered as a signed percentage.
     private var combinedEffectSection: some View {
-        Section {
+        let deltas = state.appleHealthIRService?.currentDeltas ?? AppleHealthIRDeltas()
+        let pct = deltas.combined
+        return Section {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Combined IR Effect")
@@ -42,10 +44,9 @@ struct AppleHealthIRSheet: View {
                     Text("Multiplier")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    let pct = (state.appleHealthIRMultiplier - 1.0) * 100
-                    Text(combinedLabel(pct))
+                    Text(deltaLabel(pct))
                         .font(.system(.title2, design: .rounded, weight: .semibold))
-                        .foregroundStyle(combinedColor(pct))
+                        .foregroundStyle(deltaColor(pct))
                 }
             }
             .padding(.vertical, 4)
@@ -55,28 +56,33 @@ struct AppleHealthIRSheet: View {
         }
     }
 
-    /// Per-source breakdown using the current live biometric values.
     private var breakdownSection: some View {
-        Section("Breakdown") {
+        let deltas = state.appleHealthIRService?.currentDeltas ?? AppleHealthIRDeltas()
+        return Section("Breakdown") {
             breakdownRow(
                 source: .sleep,
                 value: state.sleepHours.map { String(format: "%.1f h", $0) } ?? "—",
-                delta: sleepDeltaDisplay(state.sleepHours)
+                delta: deltas.sleep
             )
             breakdownRow(
                 source: .steps,
                 value: state.stepCount > 0 ? state.stepCount.formatted() : "—",
-                delta: stepsDeltaDisplay(state.stepCount)
+                delta: deltas.steps
             )
             breakdownRow(
                 source: .hrv,
                 value: state.hrv.map { String(format: "%.0f ms", $0) } ?? "—",
-                delta: hrvDeltaDisplay(state.hrv)
+                delta: deltas.hrv
+            )
+            breakdownRow(
+                source: .exercise,
+                value: state.exerciseHours.map { String(format: "%.0f min", $0 * 60) } ?? "—",
+                delta: deltas.exercise
             )
         }
     }
 
-    private func breakdownRow(source: AppleHealthIRSource, value: String, delta: String) -> some View {
+    private func breakdownRow(source: AppleHealthIRSource, value: String, delta: Double) -> some View {
         HStack {
             Image(systemName: source.systemImage)
                 .frame(width: 24)
@@ -88,23 +94,20 @@ struct AppleHealthIRSheet: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            Text(delta)
+            Text(deltaLabel(delta))
                 .font(.system(.body, design: .rounded, weight: .medium))
                 .foregroundStyle(deltaColor(delta))
         }
     }
 
-    /// Chronological list of individual snapshots, grouped by calendar date.
-    private var recentSnapshotsSection: some View {
-        let allEntries = state.appleHealthIRService?.entries ?? []
-        let grouped = Dictionary(grouping: allEntries) { entry -> String in
-            let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            formatter.timeStyle = .none
-            return formatter.string(from: entry.timestamp)
+    private func recentSnapshotsSection(_ entries: [AppleHealthIREntry]) -> some View {
+        let grouped = Dictionary(grouping: entries) { entry -> String in
+            let f = DateFormatter()
+            f.dateStyle = .medium
+            f.timeStyle = .none
+            return f.string(from: entry.timestamp)
         }
         let sortedKeys = grouped.keys.sorted(by: >)
-
         return ForEach(sortedKeys, id: \.self) { key in
             Section(key) {
                 ForEach(grouped[key] ?? []) { entry in
@@ -120,83 +123,28 @@ struct AppleHealthIRSheet: View {
                 .frame(width: 22)
                 .foregroundStyle(.secondary)
             VStack(alignment: .leading, spacing: 2) {
-                Text(entry.source.displayName)
+                Text(entry.details)
                     .font(.subheadline)
                 Text(entry.timestamp, style: .relative)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            Text(formattedDelta(entry.irDeltaPercent))
+            Text(deltaLabel(entry.irDeltaPercent))
                 .font(.system(.body, design: .rounded, weight: .medium))
-                .foregroundStyle(entry.irDeltaPercent > 0 ? AnyShapeStyle(Color.orange) : AnyShapeStyle(Color.green))
+                .foregroundStyle(deltaColor(entry.irDeltaPercent))
         }
     }
 
-    // MARK: - Formatting Helpers
+    // MARK: - Helpers
 
-    private func combinedLabel(_ pct: Double) -> String {
-        if abs(pct) < 1 { return "None" }
+    private func deltaLabel(_ pct: Double) -> String {
+        if abs(pct) < 0.5 { return "None" }
         return String(format: "%+.0f%%", pct)
     }
 
-    private func combinedColor(_ pct: Double) -> AnyShapeStyle {
-        if abs(pct) < 1 { return AnyShapeStyle(.secondary) }
-        if pct > 0 { return AnyShapeStyle(Color.orange) }
-        return AnyShapeStyle(Color.green)
-    }
-
-    private func formattedDelta(_ delta: Double) -> String {
-        String(format: "%+.1f%%", delta)
-    }
-
-    private func deltaColor(_ text: String) -> AnyShapeStyle {
-        if text.hasPrefix("+") { return AnyShapeStyle(Color.orange) }
-        if text.hasPrefix("-") { return AnyShapeStyle(Color.green) }
-        return AnyShapeStyle(Color.secondary)
-    }
-
-    // MARK: - Live Delta Calculations (mirrors AppleHealthIRService math, read-only)
-
-    private func sleepDeltaDisplay(_ hours: Double?) -> String {
-        guard let h = hours else { return "—" }
-        let delta: Double
-        if h < 5 {
-            delta = 20.0
-        } else if h < 7 {
-            delta = 5.0 + (7.0 - h) / 2.0 * 10.0
-        } else {
-            delta = 0.0
-        }
-        return delta == 0 ? "None" : String(format: "%+.1f%%", delta)
-    }
-
-    private func stepsDeltaDisplay(_ steps: Int) -> String {
-        let delta: Double
-        if steps < 2_000 {
-            delta = 0.0
-        } else if steps < 5_000 {
-            delta = -3.0
-        } else if steps < 10_000 {
-            delta = -5.0
-        } else {
-            delta = -8.0
-        }
-        return delta == 0 ? "None" : String(format: "%+.1f%%", delta)
-    }
-
-    private func hrvDeltaDisplay(_ hrv: Double?) -> String {
-        guard let ms = hrv else { return "—" }
-        let delta: Double
-        if ms < 20 {
-            delta = 15.0
-        } else if ms < 40 {
-            delta = 8.0
-        } else if ms <= 60 {
-            delta = 0.0
-        } else {
-            delta = -5.0
-        }
-        return delta == 0 ? "None" : String(format: "%+.1f%%", delta)
+    private func deltaColor(_ pct: Double) -> AnyShapeStyle {
+        if abs(pct) < 0.5 { return AnyShapeStyle(.secondary) }
+        return pct > 0 ? AnyShapeStyle(Color.orange) : AnyShapeStyle(Color.green)
     }
 }

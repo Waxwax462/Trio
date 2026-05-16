@@ -29,12 +29,14 @@ enum AppleHealthIRSource: String, Codable, CaseIterable, Sendable {
     case sleep
     case steps
     case hrv
+    case exercise
 
     var displayName: String {
         switch self {
         case .sleep: return "Sleep"
         case .steps: return "Activity"
         case .hrv: return "HRV / Stress"
+        case .exercise: return "Exercise"
         }
     }
 
@@ -43,6 +45,7 @@ enum AppleHealthIRSource: String, Codable, CaseIterable, Sendable {
         case .sleep: return "moon.zzz.fill"
         case .steps: return "figure.walk"
         case .hrv: return "waveform.path.ecg"
+        case .exercise: return "figure.run"
         }
     }
 }

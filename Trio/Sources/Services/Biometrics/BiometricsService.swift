@@ -15,14 +15,17 @@ final class BiometricsService: @unchecked Sendable {
     private(set) var stepCount: Int = 0
     private(set) var hrv: Double? = nil
     private(set) var sleepHours: Double? = nil
+    private(set) var exerciseHours: Double? = nil
     private(set) var authorizationStatus: BiometricsAuthorizationStatus = .notDetermined
 
     private var stepObserverQuery: HKObserverQuery?
+    private var exerciseObserverQuery: HKObserverQuery?
     private var hrvAnchoredQuery: HKAnchoredObjectQuery?
     private var hrvAnchor: HKQueryAnchor?
     private var isStarted = false
 
     private static let stepType = HKQuantityType(.stepCount)
+    private static let exerciseType = HKQuantityType(.appleExerciseTime)
     private static let hrvType = HKQuantityType(.heartRateVariabilitySDNN)
     private static let sleepType = HKCategoryType(.sleepAnalysis)
     private static let hrvUnit = HKUnit.secondUnit(with: .milli)
@@ -33,7 +36,7 @@ final class BiometricsService: @unchecked Sendable {
             completion(false)
             return
         }
-        let readTypes: Set<HKObjectType> = [Self.stepType, Self.hrvType, Self.sleepType]
+        let readTypes: Set<HKObjectType> = [Self.stepType, Self.exerciseType, Self.hrvType, Self.sleepType]
         healthKitStore.requestAuthorization(toShare: [], read: readTypes) { [weak self] success, _ in
             DispatchQueue.main.async {
                 self?.authorizationStatus = success ? .authorized : .denied
@@ -49,11 +52,13 @@ final class BiometricsService: @unchecked Sendable {
                 if self.isStarted {
                     // Already running — only refresh one-shot queries
                     self.fetchTodaySteps(completion: nil)
+                    self.fetchTodayExercise(completion: nil)
                     self.fetchSleep()
                     return
                 }
                 self.isStarted = true
                 self.startStepQuery()
+                self.startExerciseQuery()
                 self.startHRVQuery()
                 self.fetchSleep()
             }
@@ -64,6 +69,7 @@ final class BiometricsService: @unchecked Sendable {
         guard isStarted else { return }
         isStarted = false
         if let q = stepObserverQuery { healthKitStore.stop(q); stepObserverQuery = nil }
+        if let q = exerciseObserverQuery { healthKitStore.stop(q); exerciseObserverQuery = nil }
         if let q = hrvAnchoredQuery { healthKitStore.stop(q); hrvAnchoredQuery = nil }
     }
 
@@ -98,6 +104,42 @@ final class BiometricsService: @unchecked Sendable {
             let steps = Int(result?.sumQuantity()?.doubleValue(for: .count()) ?? 0)
             Task { @MainActor [weak self] in
                 self?.stepCount = steps
+                self?.updatePublisher.send()
+            }
+            completion?()
+        }
+        healthKitStore.execute(statsQuery)
+    }
+
+    // MARK: - Exercise
+
+    private func startExerciseQuery() {
+        guard exerciseObserverQuery == nil else {
+            fetchTodayExercise(completion: nil)
+            return
+        }
+        let query = HKObserverQuery(sampleType: Self.exerciseType, predicate: nil) { [weak self] _, completionHandler, error in
+            guard error == nil else { completionHandler(); return }
+            self?.fetchTodayExercise(completion: completionHandler)
+        }
+        exerciseObserverQuery = query
+        healthKitStore.execute(query)
+        fetchTodayExercise(completion: nil)
+    }
+
+    private func fetchTodayExercise(completion: (@Sendable () -> Void)?) {
+        let startOfDay = Calendar.current.startOfDay(for: Date())
+        let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: Date())
+        let statsQuery = HKStatisticsQuery(
+            quantityType: Self.exerciseType,
+            quantitySamplePredicate: predicate,
+            options: .cumulativeSum
+        ) { [weak self] _, result, _ in
+            let minutes = result?.sumQuantity()?.doubleValue(for: .minute()) ?? 0
+            // Store nil when no exercise data exists (avoids treating 0 as "no data")
+            let hours: Double? = minutes > 0 ? minutes / 60.0 : nil
+            Task { @MainActor [weak self] in
+                self?.exerciseHours = hours
                 self?.updatePublisher.send()
             }
             completion?()
