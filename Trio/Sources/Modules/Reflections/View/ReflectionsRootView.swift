@@ -30,6 +30,9 @@ extension Reflections {
                         tirSection
                         averageGlucoseSection
                         sampleCountSection
+                        if !state.detectedPatterns.isEmpty {
+                            patternsSection
+                        }
                         analyzeSection
                         if let narrative = state.llmNarrative {
                             narrativeCard(narrative)
@@ -193,6 +196,55 @@ extension Reflections {
             .padding()
             .background(Color.chart.opacity(0.5), in: RoundedRectangle(cornerRadius: 16))
             .padding(.horizontal)
+        }
+
+        // MARK: - Patterns Section
+
+        private var patternsSection: some View {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Detected Patterns")
+                    .font(.headline)
+                    .padding(.horizontal)
+
+                ForEach(state.detectedPatterns) { pattern in
+                    patternCard(pattern)
+                }
+            }
+            .padding(.horizontal)
+        }
+
+        @ViewBuilder private func patternCard(_ pattern: DetectedPattern) -> some View {
+            HStack(spacing: 12) {
+                Image(systemName: pattern.kind.systemImage)
+                    .font(.title2)
+                    .foregroundStyle(patternColor(pattern))
+                    .frame(width: 36)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(pattern.kind.displayName)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                    Text(pattern.summary)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer()
+            }
+            .padding()
+            .background(patternColor(pattern).opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(patternColor(pattern).opacity(0.2), lineWidth: 1)
+            )
+        }
+
+        private func patternColor(_ pattern: DetectedPattern) -> Color {
+            switch pattern.kind {
+            case .consistentHighs: return .loopYellow
+            case .consistentLows: return .red
+            case .postMealSpike: return .orange
+            }
         }
 
         // MARK: - Analyze Section

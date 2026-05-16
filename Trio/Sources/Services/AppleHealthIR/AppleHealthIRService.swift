@@ -7,25 +7,54 @@ struct AppleHealthIRThresholds: Codable {
     // Sleep (hours)
     var sleepSevereDeprivationMax: Double = 5.0
     var sleepMildDeprivationMax: Double = 7.0
+    /// IR delta applied when sleep is below the severe deprivation threshold (%).
+    var sleepSevereIREffect: Double = 20.0
+    /// IR delta applied at the boundary of severe/mild deprivation (%). Linear interpolation used between boundaries.
+    var sleepMildIREffect: Double = 5.0
+
     // Steps
     var stepsLowMin: Int = 2_000
     var stepsMediumMin: Int = 5_000
     var stepsHighMin: Int = 10_000
+    /// IR delta (%) for low activity band. Negative = improved sensitivity.
+    var stepsLowIREffect: Double = -3.0
+    /// IR delta (%) for medium activity band.
+    var stepsMediumIREffect: Double = -5.0
+    /// IR delta (%) for high activity band.
+    var stepsHighIREffect: Double = -8.0
+
     // HRV (ms)
     var hrvVeryLowMax: Double = 20.0
     var hrvLowMax: Double = 40.0
     var hrvNormalMax: Double = 60.0
+    /// IR delta (%) when HRV is very low (high stress).
+    var hrvVeryLowIREffect: Double = 15.0
+    /// IR delta (%) when HRV is in the low band.
+    var hrvLowIREffect: Double = 8.0
+    /// IR delta (%) when HRV is above normal (good recovery).
+    var hrvHighIREffect: Double = -5.0
+
     // Exercise (minutes)
     var exerciseMinThreshold: Double = 20.0
     var exerciseModerateMax: Double = 60.0
     var exerciseSubstantialMax: Double = 120.0
+    /// IR delta (%) for moderate exercise band.
+    var exerciseModerateIREffect: Double = -5.0
+    /// IR delta (%) for substantial exercise band.
+    var exerciseSubstantialIREffect: Double = -10.0
+    /// IR delta (%) for heavy exercise (above substantial threshold).
+    var exerciseHeavyIREffect: Double = -15.0
 
     static let defaultsKey = "rheos.appleHealthIRThresholds"
 
     static var current: AppleHealthIRThresholds {
-        guard let data = UserDefaults.standard.data(forKey: defaultsKey),
-              let decoded = try? JSONDecoder().decode(AppleHealthIRThresholds.self, from: data)
-        else { return AppleHealthIRThresholds() }
+        guard let data = UserDefaults.standard.data(forKey: defaultsKey) else {
+            return AppleHealthIRThresholds()
+        }
+        guard let decoded = try? JSONDecoder().decode(AppleHealthIRThresholds.self, from: data) else {
+            debug(.default, "AppleHealthIRThresholds: decode failed — using defaults")
+            return AppleHealthIRThresholds()
+        }
         return decoded
     }
 
@@ -66,7 +95,7 @@ protocol AppleHealthIRService: AnyObject {
     /// The most recently computed per-source deltas. Updated on every `update()` call.
     var currentDeltas: AppleHealthIRDeltas { get }
     /// Combined multiplier: 1.0 = no effect, 1.20 = 20% more resistance, 0.92 = 8% less resistance.
-    /// Hard floor of 0.5 — algorithm cannot receive a multiplier below that.
+    /// Clamped to [0.5, 2.0] — algorithm cannot receive a multiplier outside this range.
     var insulinResistanceMultiplier: Double { get }
     /// Fires whenever entries or the multiplier change.
     var updatePublisher: AnyPublisher<Void, Never> { get }
@@ -152,8 +181,8 @@ final class BaseAppleHealthIRService: AppleHealthIRService {
         currentDeltas = AppleHealthIRDeltas(sleep: sleepDelta, steps: stepsDelta, hrv: hrvDelta, exercise: exerciseDelta)
 
         // Recompute multiplier from live deltas (not from accumulated entries).
-        // Hard floor 0.5 — insulin delivery can never be more than halved.
-        insulinResistanceMultiplier = max(0.5, 1.0 + currentDeltas.combined / 100.0)
+        // Clamped to [0.5, 2.0]: floor prevents >50% reduction; ceiling caps at 2× baseline.
+        insulinResistanceMultiplier = min(2.0, max(0.5, 1.0 + currentDeltas.combined / 100.0))
 
         save()
         subject.send()
@@ -163,20 +192,24 @@ final class BaseAppleHealthIRService: AppleHealthIRService {
     // All thresholds are documented inline. Values are deterministic and not LLM-derived.
 
     /// Sleep-driven IR delta.
-    /// - < 5 h sleep  → +20% IR (severe deprivation).
-    /// - 5–7 h sleep  → linear interpolation from +15% (at 5 h) down to +5% (approaching 7 h).
-    ///   Formula: +5.0 + (7.0 - hours) / 2.0 * 10.0
-    ///   At 5 h: +5 + 2/2 * 10 = +15; at 6.9 h: +5 + 0.1/2 * 10 = +5.5.
-    /// - 7–9 h sleep  → 0% (optimal range).
-    /// - > 9 h or nil → 0% (no data or oversleeping, no adjustment).
+    /// - < severe h   → sleepSevereIREffect (default +20%).
+    /// - severe–mild h → linear interpolation from sleepSevereIREffect (at severe boundary) to sleepMildIREffect (at mild boundary).
+    ///   Formula: mildEffect + (mild - h) / (mild - severe) * (severeEffect - mildEffect).
+    ///   Default example: at 6 h → 5.0 + (7-6)/(7-5) * (20-5) = 5.0 + 7.5 = 12.5%.
+    /// - ≥ mild h     → 0% (optimal range).
+    /// - nil          → 0% (no data, no adjustment).
     private static func computeSleepDelta(_ sleepHours: Double?, thresholds: AppleHealthIRThresholds) -> Double {
         guard let h = sleepHours else { return 0.0 }
         let severe = thresholds.sleepSevereDeprivationMax
         let mild = thresholds.sleepMildDeprivationMax
         if h < severe {
-            return 20.0
+            return thresholds.sleepSevereIREffect
         } else if h < mild {
-            return 5.0 + (mild - h) / (mild - severe) * 10.0
+            // Linear interpolation from sleepSevereIREffect (at severe boundary) to sleepMildIREffect (at mild boundary).
+            let denominator = mild - severe
+            guard denominator > 0 else { return thresholds.sleepSevereIREffect }
+            let fraction = (mild - h) / denominator
+            return thresholds.sleepMildIREffect + fraction * (thresholds.sleepSevereIREffect - thresholds.sleepMildIREffect)
         } else {
             return 0.0
         }
@@ -191,11 +224,11 @@ final class BaseAppleHealthIRService: AppleHealthIRService {
         if steps < thresholds.stepsLowMin {
             return 0.0
         } else if steps < thresholds.stepsMediumMin {
-            return -3.0
+            return thresholds.stepsLowIREffect
         } else if steps < thresholds.stepsHighMin {
-            return -5.0
+            return thresholds.stepsMediumIREffect
         } else {
-            return -8.0
+            return thresholds.stepsHighIREffect
         }
     }
 
@@ -210,13 +243,13 @@ final class BaseAppleHealthIRService: AppleHealthIRService {
     private static func computeHRVDelta(_ hrv: Double?, thresholds: AppleHealthIRThresholds) -> Double {
         guard let ms = hrv else { return 0.0 }
         if ms < thresholds.hrvVeryLowMax {
-            return 15.0
+            return thresholds.hrvVeryLowIREffect
         } else if ms < thresholds.hrvLowMax {
-            return 8.0
+            return thresholds.hrvLowIREffect
         } else if ms <= thresholds.hrvNormalMax {
             return 0.0
         } else {
-            return -5.0
+            return thresholds.hrvHighIREffect
         }
     }
 
@@ -233,11 +266,11 @@ final class BaseAppleHealthIRService: AppleHealthIRService {
         if minutes < thresholds.exerciseMinThreshold {
             return 0.0
         } else if minutes < thresholds.exerciseModerateMax {
-            return -5.0
+            return thresholds.exerciseModerateIREffect
         } else if minutes < thresholds.exerciseSubstantialMax {
-            return -10.0
+            return thresholds.exerciseSubstantialIREffect
         } else {
-            return -15.0
+            return thresholds.exerciseHeavyIREffect
         }
     }
 

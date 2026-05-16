@@ -11,6 +11,8 @@ extension Reflections {
         var llmNarrative: String? = nil
         var isAnalyzing: Bool = false
         var hasLLMProvider: Bool = false
+        /// Deterministically detected glucose patterns for the selected period.
+        var detectedPatterns: [DetectedPattern] = []
 
         private let coredataContext = CoreDataStack.shared.newTaskContext()
 
@@ -40,6 +42,52 @@ extension Reflections {
             let result = await fetchGlucoseTIR(since: startDate)
             tirResult = result.tir
             sampleCount = result.count
+
+            // Pattern detection runs after TIR so the loading indicator covers both.
+            detectedPatterns = await detectPatterns(since: startDate)
+        }
+
+        // MARK: - Pattern Detection
+
+        private func detectPatterns(since startDate: Date) async -> [DetectedPattern] {
+            let context = coredataContext
+            return await context.perform {
+                // Fetch glucose samples
+                let glucoseFR = NSFetchRequest<GlucoseStored>(entityName: "GlucoseStored")
+                glucoseFR.predicate = NSPredicate(format: "date >= %@", startDate as NSDate)
+                glucoseFR.sortDescriptors = [NSSortDescriptor(keyPath: \GlucoseStored.date, ascending: true)]
+
+                let glucoseSamples: [(date: Date, glucose: Double)]
+                do {
+                    let stored = try context.fetch(glucoseFR)
+                    glucoseSamples = stored.compactMap { entry -> (Date, Double)? in
+                        guard let date = entry.date else { return nil }
+                        return (date, Double(entry.glucose))
+                    }
+                } catch {
+                    debug(.default, "PatternDetector: failed to fetch glucose: \(error)")
+                    return []
+                }
+
+                // Fetch carb entries
+                let carbFR = NSFetchRequest<CarbEntryStored>(entityName: "CarbEntryStored")
+                carbFR.predicate = NSPredicate(format: "date >= %@ AND isFPU == NO", startDate as NSDate)
+                carbFR.sortDescriptors = [NSSortDescriptor(keyPath: \CarbEntryStored.date, ascending: true)]
+
+                let carbEntries: [(date: Date)]
+                do {
+                    let stored = try context.fetch(carbFR)
+                    carbEntries = stored.compactMap { entry -> (date: Date)? in
+                        guard let date = entry.date else { return nil }
+                        return (date: date)
+                    }
+                } catch {
+                    debug(.default, "PatternDetector: failed to fetch carbs: \(error)")
+                    carbEntries = []
+                }
+
+                return PatternDetector.detect(glucoseSamples: glucoseSamples, carbEntries: carbEntries)
+            }
         }
 
         private func fetchGlucoseTIR(since startDate: Date) async -> (tir: TIRResult, count: Int) {

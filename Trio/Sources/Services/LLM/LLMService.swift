@@ -93,7 +93,9 @@ enum LLMProvider: String, CaseIterable, Identifiable {
     }
 
     var storedModel: String {
-        UserDefaults.standard.string(forKey: modelDefaultsKey) ?? defaultModel
+        guard let saved = UserDefaults.standard.string(forKey: modelDefaultsKey),
+              availableModels.contains(saved) else { return defaultModel }
+        return saved
     }
 
     @discardableResult

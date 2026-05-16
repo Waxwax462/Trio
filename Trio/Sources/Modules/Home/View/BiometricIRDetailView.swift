@@ -220,38 +220,68 @@ struct BiometricIRDetailView: View {
     }
 
     private var thresholds: [ThresholdItem] {
+        let t = AppleHealthIRThresholds.current
         switch tile {
         case .steps:
             let s = state.stepCount
             return [
-                ThresholdItem(range: "< 2,000 steps",   effect: "None",   isCurrent: s < 2_000),
-                ThresholdItem(range: "2,000 – 4,999",   effect: "−3% IR", isCurrent: s >= 2_000 && s < 5_000),
-                ThresholdItem(range: "5,000 – 9,999",   effect: "−5% IR", isCurrent: s >= 5_000 && s < 10_000),
-                ThresholdItem(range: "≥ 10,000 steps",  effect: "−8% IR", isCurrent: s >= 10_000)
+                ThresholdItem(range: "< \(t.stepsLowMin.formatted()) steps",
+                              effect: "None",
+                              isCurrent: s < t.stepsLowMin),
+                ThresholdItem(range: "\(t.stepsLowMin.formatted()) – \((t.stepsMediumMin - 1).formatted())",
+                              effect: String(format: "%+.0f%% IR", t.stepsLowIREffect),
+                              isCurrent: s >= t.stepsLowMin && s < t.stepsMediumMin),
+                ThresholdItem(range: "\(t.stepsMediumMin.formatted()) – \((t.stepsHighMin - 1).formatted())",
+                              effect: String(format: "%+.0f%% IR", t.stepsMediumIREffect),
+                              isCurrent: s >= t.stepsMediumMin && s < t.stepsHighMin),
+                ThresholdItem(range: "≥ \(t.stepsHighMin.formatted()) steps",
+                              effect: String(format: "%+.0f%% IR", t.stepsHighIREffect),
+                              isCurrent: s >= t.stepsHighMin)
             ]
         case .hrv, .bpm:
             let h = state.hrv
             return [
-                ThresholdItem(range: "< 20 ms",    effect: "+15% IR", isCurrent: h.map { $0 < 20 } ?? false),
-                ThresholdItem(range: "20 – 39 ms", effect: "+8% IR",  isCurrent: h.map { $0 >= 20 && $0 < 40 } ?? false),
-                ThresholdItem(range: "40 – 60 ms", effect: "None",    isCurrent: h.map { $0 >= 40 && $0 <= 60 } ?? false),
-                ThresholdItem(range: "> 60 ms",    effect: "−5% IR",  isCurrent: h.map { $0 > 60 } ?? false)
+                ThresholdItem(range: "< \(Int(t.hrvVeryLowMax)) ms",
+                              effect: String(format: "+%.0f%% IR", t.hrvVeryLowIREffect),
+                              isCurrent: h.map { $0 < t.hrvVeryLowMax } ?? false),
+                ThresholdItem(range: "\(Int(t.hrvVeryLowMax)) – \(Int(t.hrvLowMax) - 1) ms",
+                              effect: String(format: "+%.0f%% IR", t.hrvLowIREffect),
+                              isCurrent: h.map { $0 >= t.hrvVeryLowMax && $0 < t.hrvLowMax } ?? false),
+                ThresholdItem(range: "\(Int(t.hrvLowMax)) – \(Int(t.hrvNormalMax)) ms",
+                              effect: "None",
+                              isCurrent: h.map { $0 >= t.hrvLowMax && $0 <= t.hrvNormalMax } ?? false),
+                ThresholdItem(range: "> \(Int(t.hrvNormalMax)) ms",
+                              effect: String(format: "%.0f%% IR", t.hrvHighIREffect),
+                              isCurrent: h.map { $0 > t.hrvNormalMax } ?? false)
             ]
         case .sleep:
             let sl = state.sleepHours
             return [
-                ThresholdItem(range: "< 5 h",   effect: "+20% IR",     isCurrent: sl.map { $0 < 5 } ?? false),
-                ThresholdItem(range: "5 – 7 h", effect: "+5 – 15% IR", isCurrent: sl.map { $0 >= 5 && $0 < 7 } ?? false),
-                ThresholdItem(range: "7 – 9 h", effect: "None",         isCurrent: sl.map { $0 >= 7 && $0 <= 9 } ?? false),
-                ThresholdItem(range: "> 9 h",   effect: "None",         isCurrent: sl.map { $0 > 9 } ?? false)
+                ThresholdItem(range: "< \(String(format: "%.0f", t.sleepSevereDeprivationMax)) h",
+                              effect: String(format: "+%.0f%% IR", t.sleepSevereIREffect),
+                              isCurrent: sl.map { $0 < t.sleepSevereDeprivationMax } ?? false),
+                ThresholdItem(range: "\(String(format: "%.0f", t.sleepSevereDeprivationMax)) – \(String(format: "%.0f", t.sleepMildDeprivationMax)) h",
+                              effect: String(format: "+%.0f – +%.0f%% IR", t.sleepMildIREffect, t.sleepSevereIREffect),
+                              isCurrent: sl.map { $0 >= t.sleepSevereDeprivationMax && $0 < t.sleepMildDeprivationMax } ?? false),
+                ThresholdItem(range: "≥ \(String(format: "%.0f", t.sleepMildDeprivationMax)) h",
+                              effect: "None",
+                              isCurrent: sl.map { $0 >= t.sleepMildDeprivationMax } ?? false)
             ]
         case .exercise:
             let ex = (state.exerciseHours ?? 0) * 60
             return [
-                ThresholdItem(range: "< 20 min",     effect: "None",    isCurrent: ex < 20),
-                ThresholdItem(range: "20 – 59 min",  effect: "−5% IR",  isCurrent: ex >= 20 && ex < 60),
-                ThresholdItem(range: "60 – 119 min", effect: "−10% IR", isCurrent: ex >= 60 && ex < 120),
-                ThresholdItem(range: "≥ 120 min",    effect: "−15% IR", isCurrent: ex >= 120)
+                ThresholdItem(range: "< \(Int(t.exerciseMinThreshold)) min",
+                              effect: "None",
+                              isCurrent: ex < t.exerciseMinThreshold),
+                ThresholdItem(range: "\(Int(t.exerciseMinThreshold)) – \(Int(t.exerciseModerateMax) - 1) min",
+                              effect: String(format: "%.0f%% IR", t.exerciseModerateIREffect),
+                              isCurrent: ex >= t.exerciseMinThreshold && ex < t.exerciseModerateMax),
+                ThresholdItem(range: "\(Int(t.exerciseModerateMax)) – \(Int(t.exerciseSubstantialMax) - 1) min",
+                              effect: String(format: "%.0f%% IR", t.exerciseSubstantialIREffect),
+                              isCurrent: ex >= t.exerciseModerateMax && ex < t.exerciseSubstantialMax),
+                ThresholdItem(range: "≥ \(Int(t.exerciseSubstantialMax)) min",
+                              effect: String(format: "%.0f%% IR", t.exerciseHeavyIREffect),
+                              isCurrent: ex >= t.exerciseSubstantialMax)
             ]
         }
     }

@@ -223,6 +223,8 @@
 		EE5500000009000000000001 /* ReflectionsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5500000005000000000001 /* ReflectionsProvider.swift */; };
 		EE550000000A000000000001 /* ReflectionsStateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5500000006000000000001 /* ReflectionsStateModel.swift */; };
 		EE550000000B000000000001 /* ReflectionsRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5500000007000000000001 /* ReflectionsRootView.swift */; };
+		EE550000000E000000000001 /* DetectedPattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE550000000C000000000001 /* DetectedPattern.swift */; };
+		EE550000000F000000000001 /* PatternDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE550000000D000000000001 /* PatternDetector.swift */; };
 		AH9900000007000000000001 /* AppleHealthIRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AH9900000001000000000001 /* AppleHealthIRService.swift */; };
 		AH9900000008000000000001 /* AppleHealthIREntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = AH9900000002000000000001 /* AppleHealthIREntry.swift */; };
 		AH9900000009000000000001 /* HomeStateModel+AppleHealthIR.swift in Sources */ = {isa = PBXBuildFile; fileRef = AH9900000003000000000001 /* HomeStateModel+AppleHealthIR.swift */; };
@@ -1118,6 +1120,8 @@
 		EE5500000005000000000001 /* ReflectionsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionsProvider.swift; sourceTree = "<group>"; };
 		EE5500000006000000000001 /* ReflectionsStateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionsStateModel.swift; sourceTree = "<group>"; };
 		EE5500000007000000000001 /* ReflectionsRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionsRootView.swift; sourceTree = "<group>"; };
+		EE550000000C000000000001 /* DetectedPattern.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectedPattern.swift; sourceTree = "<group>"; };
+		EE550000000D000000000001 /* PatternDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternDetector.swift; sourceTree = "<group>"; };
 		AH9900000001000000000001 /* AppleHealthIRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleHealthIRService.swift; sourceTree = "<group>"; };
 		AH9900000002000000000001 /* AppleHealthIREntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleHealthIREntry.swift; sourceTree = "<group>"; };
 		AH9900000003000000000001 /* HomeStateModel+AppleHealthIR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeStateModel+AppleHealthIR.swift"; sourceTree = "<group>"; };
@@ -2948,6 +2952,8 @@
 				EE5500000004000000000001 /* ReflectionsDataFlow.swift */,
 				EE5500000005000000000001 /* ReflectionsProvider.swift */,
 				EE5500000006000000000001 /* ReflectionsStateModel.swift */,
+				EE550000000C000000000001 /* DetectedPattern.swift */,
+				EE550000000D000000000001 /* PatternDetector.swift */,
 				EE5500000002000000000001 /* View */,
 			);
 			path = Reflections;
@@ -4928,6 +4934,8 @@
 				EE5500000009000000000001 /* ReflectionsProvider.swift in Sources */,
 				EE550000000A000000000001 /* ReflectionsStateModel.swift in Sources */,
 				EE550000000B000000000001 /* ReflectionsRootView.swift in Sources */,
+				EE550000000E000000000001 /* DetectedPattern.swift in Sources */,
+				EE550000000F000000000001 /* PatternDetector.swift in Sources */,
 				DD1745292C55642100211FAC /* SettingInputSection.swift in Sources */,
 				38569349270B5DFB0002C50D /* AppGroupSource.swift in Sources */,
 				F5CA3DB1F9DC8B05792BBFAA /* CGMSettingsDataFlow.swift in Sources */,
