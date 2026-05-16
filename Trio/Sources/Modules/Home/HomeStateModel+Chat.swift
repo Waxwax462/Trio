@@ -6,7 +6,7 @@ extension Home.StateModel {
         return ChatContext(
             currentGlucose: recentGlucose?.glucose.map { Double($0) },
             glucoseUnit: units == .mmolL ? "mmol/L" : "mg/dL",
-            iob: Double(currentIOB),
+            iob: Double(truncating: currentIOB as NSNumber),
             cob: cobValue,
             heartRate: currentBPM,
             currentCaffeineMg: currentCaffeineMg,
