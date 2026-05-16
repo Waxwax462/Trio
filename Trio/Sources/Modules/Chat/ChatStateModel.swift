@@ -7,7 +7,8 @@ extension Chat {
         var inputText: String = ""
         var isStreaming: Bool = false
         var context: ChatContext = .empty
-        var apiKey: String = UserDefaults.standard.string(forKey: AnthropicLLMService.apiKeyDefaultsKey) ?? ""
+
+        var hasAPIKey: Bool { LLMServiceFactory.makeService() != nil }
 
         @ObservationIgnored private var llmService: (any LLMService)?
 
@@ -19,24 +20,18 @@ extension Chat {
             let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !text.isEmpty, !isStreaming else { return }
 
-            let key = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !key.isEmpty else {
-                let errMsg = ChatMessage(
+            // Rebuild service each time so it picks up settings changes without restart.
+            llmService = LLMServiceFactory.makeService()
+
+            guard let service = llmService else {
+                messages.append(ChatMessage(
                     id: UUID(),
                     role: .assistant,
-                    content: "Please enter your Anthropic API key to use Rheos AI.",
+                    content: "No AI provider configured. Go to Settings → Services → AI Settings to add an API key.",
                     timestamp: Date()
-                )
-                messages.append(errMsg)
+                ))
                 return
             }
-
-            if llmService == nil {
-                llmService = AnthropicLLMService(apiKey: key)
-            }
-
-            // Use guard to avoid force-unwrap; service is always non-nil here
-            guard let service = llmService else { return }
 
             let userMessage = ChatMessage(id: UUID(), role: .user, content: text, timestamp: Date())
             messages.append(userMessage)
@@ -64,11 +59,6 @@ extension Chat {
             } catch {
                 messages[lastIndex].content = "Sorry, I couldn't connect. Please check your API key and try again."
             }
-        }
-
-        func saveAPIKey() {
-            UserDefaults.standard.set(apiKey.trimmingCharacters(in: .whitespacesAndNewlines), forKey: AnthropicLLMService.apiKeyDefaultsKey)
-            llmService = nil
         }
 
         private func buildSystemPrompt() -> String {

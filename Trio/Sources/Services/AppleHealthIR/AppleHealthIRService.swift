@@ -1,6 +1,40 @@
 import Combine
 import Foundation
 
+// MARK: - Thresholds
+
+struct AppleHealthIRThresholds: Codable {
+    // Sleep (hours)
+    var sleepSevereDeprivationMax: Double = 5.0
+    var sleepMildDeprivationMax: Double = 7.0
+    // Steps
+    var stepsLowMin: Int = 2_000
+    var stepsMediumMin: Int = 5_000
+    var stepsHighMin: Int = 10_000
+    // HRV (ms)
+    var hrvVeryLowMax: Double = 20.0
+    var hrvLowMax: Double = 40.0
+    var hrvNormalMax: Double = 60.0
+    // Exercise (minutes)
+    var exerciseMinThreshold: Double = 20.0
+    var exerciseModerateMax: Double = 60.0
+    var exerciseSubstantialMax: Double = 120.0
+
+    static let defaultsKey = "rheos.appleHealthIRThresholds"
+
+    static var current: AppleHealthIRThresholds {
+        guard let data = UserDefaults.standard.data(forKey: defaultsKey),
+              let decoded = try? JSONDecoder().decode(AppleHealthIRThresholds.self, from: data)
+        else { return AppleHealthIRThresholds() }
+        return decoded
+    }
+
+    func save() {
+        guard let data = try? JSONEncoder().encode(self) else { return }
+        UserDefaults.standard.set(data, forKey: Self.defaultsKey)
+    }
+}
+
 // MARK: - Deltas
 
 /// The most-recently computed per-source IR delta percentages.
@@ -64,11 +98,12 @@ final class BaseAppleHealthIRService: AppleHealthIRService {
 
     func update(sleepHours: Double?, stepCount: Int, hrv: Double?, exerciseHours: Double?) {
         let now = Date()
+        let thresholds = AppleHealthIRThresholds.current
 
-        let sleepDelta = Self.computeSleepDelta(sleepHours)
-        let stepsDelta = Self.computeStepsDelta(stepCount)
-        let hrvDelta = Self.computeHRVDelta(hrv)
-        let exerciseDelta = Self.computeExerciseDelta(exerciseHours)
+        let sleepDelta = Self.computeSleepDelta(sleepHours, thresholds: thresholds)
+        let stepsDelta = Self.computeStepsDelta(stepCount, thresholds: thresholds)
+        let hrvDelta = Self.computeHRVDelta(hrv, thresholds: thresholds)
+        let exerciseDelta = Self.computeExerciseDelta(exerciseHours, thresholds: thresholds)
 
         // Build one entry per non-zero source so every adjustment is individually traceable.
         var newEntries: [AppleHealthIREntry] = []
@@ -134,12 +169,14 @@ final class BaseAppleHealthIRService: AppleHealthIRService {
     ///   At 5 h: +5 + 2/2 * 10 = +15; at 6.9 h: +5 + 0.1/2 * 10 = +5.5.
     /// - 7–9 h sleep  → 0% (optimal range).
     /// - > 9 h or nil → 0% (no data or oversleeping, no adjustment).
-    private static func computeSleepDelta(_ sleepHours: Double?) -> Double {
+    private static func computeSleepDelta(_ sleepHours: Double?, thresholds: AppleHealthIRThresholds) -> Double {
         guard let h = sleepHours else { return 0.0 }
-        if h < 5 {
+        let severe = thresholds.sleepSevereDeprivationMax
+        let mild = thresholds.sleepMildDeprivationMax
+        if h < severe {
             return 20.0
-        } else if h < 7 {
-            return 5.0 + (7.0 - h) / 2.0 * 10.0
+        } else if h < mild {
+            return 5.0 + (mild - h) / (mild - severe) * 10.0
         } else {
             return 0.0
         }
@@ -150,12 +187,12 @@ final class BaseAppleHealthIRService: AppleHealthIRService {
     /// - 2 000–4 999   → -3% IR (some activity; mild improvement).
     /// - 5 000–9 999   → -5% IR (moderate activity).
     /// - ≥ 10 000      → -8% IR (high activity; notable sensitivity improvement).
-    private static func computeStepsDelta(_ steps: Int) -> Double {
-        if steps < 2_000 {
+    private static func computeStepsDelta(_ steps: Int, thresholds: AppleHealthIRThresholds) -> Double {
+        if steps < thresholds.stepsLowMin {
             return 0.0
-        } else if steps < 5_000 {
+        } else if steps < thresholds.stepsMediumMin {
             return -3.0
-        } else if steps < 10_000 {
+        } else if steps < thresholds.stepsHighMin {
             return -5.0
         } else {
             return -8.0
@@ -170,13 +207,13 @@ final class BaseAppleHealthIRService: AppleHealthIRService {
     /// - 20–39 ms       → +8% IR (elevated stress).
     /// - 40–60 ms       → 0% (normal range).
     /// - > 60 ms        → -5% IR (excellent recovery / low stress).
-    private static func computeHRVDelta(_ hrv: Double?) -> Double {
+    private static func computeHRVDelta(_ hrv: Double?, thresholds: AppleHealthIRThresholds) -> Double {
         guard let ms = hrv else { return 0.0 }
-        if ms < 20 {
+        if ms < thresholds.hrvVeryLowMax {
             return 15.0
-        } else if ms < 40 {
+        } else if ms < thresholds.hrvLowMax {
             return 8.0
-        } else if ms <= 60 {
+        } else if ms <= thresholds.hrvNormalMax {
             return 0.0
         } else {
             return -5.0
@@ -190,14 +227,14 @@ final class BaseAppleHealthIRService: AppleHealthIRService {
     /// - 20–59 min       → -5% IR (one moderate session).
     /// - 60–119 min      → -10% IR (substantial training load).
     /// - ≥ 120 min       → -15% IR (heavy training day; effect capped here).
-    private static func computeExerciseDelta(_ exerciseHours: Double?) -> Double {
+    private static func computeExerciseDelta(_ exerciseHours: Double?, thresholds: AppleHealthIRThresholds) -> Double {
         guard let h = exerciseHours else { return 0.0 }
         let minutes = h * 60
-        if minutes < 20 {
+        if minutes < thresholds.exerciseMinThreshold {
             return 0.0
-        } else if minutes < 60 {
+        } else if minutes < thresholds.exerciseModerateMax {
             return -5.0
-        } else if minutes < 120 {
+        } else if minutes < thresholds.exerciseSubstantialMax {
             return -10.0
         } else {
             return -15.0

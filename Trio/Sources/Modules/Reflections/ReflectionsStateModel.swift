@@ -8,20 +8,25 @@ extension Reflections {
         var tirResult: TIRResult = TIRResult(inRange: 0, hypo: 0, hyper: 0, average: 0)
         var isLoading: Bool = false
         var sampleCount: Int = 0
+        var llmNarrative: String? = nil
+        var isAnalyzing: Bool = false
+        var hasLLMProvider: Bool = false
 
         private let coredataContext = CoreDataStack.shared.newTaskContext()
 
         override func subscribe() {
-            Task {
-                await fetchAndComputeTIR()
-            }
+            refreshProviderStatus()
+            Task { await fetchAndComputeTIR() }
+        }
+
+        func refreshProviderStatus() {
+            hasLLMProvider = LLMServiceFactory.makeService() != nil
         }
 
         func changePeriod(_ period: Period) {
             selectedPeriod = period
-            Task {
-                await fetchAndComputeTIR()
-            }
+            llmNarrative = nil
+            Task { await fetchAndComputeTIR() }
         }
 
         @MainActor
@@ -65,6 +70,63 @@ extension Reflections {
                     return (TIRResult(inRange: 0, hypo: 0, hyper: 0, average: 0), 0)
                 }
             }
+        }
+
+        // MARK: - LLM Analysis
+
+        @MainActor
+        func analyze() async {
+            guard !isAnalyzing, sampleCount > 0 else { return }
+
+            guard let service = LLMServiceFactory.makeService() else {
+                llmNarrative = "No AI provider configured. Go to Settings → Services → AI Settings to add an API key."
+                return
+            }
+
+            llmNarrative = nil
+            isAnalyzing = true
+            defer { isAnalyzing = false }
+
+            let systemPrompt = """
+            You are a warm and encouraging diabetes management assistant. \
+            Analyze the glucose statistics and provide a 2-3 sentence retrospective. \
+            Mention what went well and one pattern to watch. \
+            Never suggest specific insulin doses, basal rates, or therapy settings changes. \
+            Always recommend consulting a healthcare provider for medical decisions. \
+            Be concise and use plain language.
+            """
+
+            let userMessage = ChatMessage(
+                id: UUID(),
+                role: .user,
+                content: buildAnalysisPrompt(),
+                timestamp: Date()
+            )
+
+            var narrative = ""
+            do {
+                for try await token in service.stream(messages: [userMessage], systemPrompt: systemPrompt) {
+                    narrative += token
+                    llmNarrative = narrative
+                }
+            } catch let error as LLMError {
+                llmNarrative = error.localizedDescription
+            } catch {
+                llmNarrative = "Could not reach AI service. Check your API key in Settings → Services → AI Settings."
+            }
+        }
+
+        private func buildAnalysisPrompt() -> String {
+            let tir = tirResult
+            return """
+            My glucose data for the last \(selectedPeriod.days) days (\(sampleCount) readings):
+            - Time In Range (70–180 mg/dL): \(String(format: "%.1f", tir.inRange))%
+            - Time High (>180 mg/dL): \(String(format: "%.1f", tir.hyper))%
+            - Time Low (<70 mg/dL): \(String(format: "%.1f", tir.hypo))%
+            - Average glucose: \(Int(tir.average)) mg/dL
+
+            Please give me a brief, warm retrospective of my glucose management for this period.
+            """
         }
     }
 }

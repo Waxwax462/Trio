@@ -300,6 +300,18 @@ enum SettingItems {
 
     static let serviceItems = [
         SettingItem(
+            title: "AI Settings",
+            view: .llmSettings,
+            searchContents: ["LLM", "Claude", "GPT", "Anthropic", "OpenAI", "API Key", "Language Model", "AI Chat", "Reflections"],
+            path: ["Services", "AI Settings"]
+        ),
+        SettingItem(
+            title: "Biometric Thresholds",
+            view: .appleHealthIRThresholds,
+            searchContents: ["Sleep", "HRV", "Steps", "Exercise", "Insulin Resistance", "Apple Health IR"],
+            path: ["Services", "Biometric Thresholds"]
+        ),
+        SettingItem(
             title: "Nightscout",
             view: .nighscoutConfig,
             searchContents: [

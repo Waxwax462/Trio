@@ -50,6 +50,8 @@ enum Screen: Identifiable, Hashable {
     case unitsAndLimits
     case appDiagnostics
     case settingsExport
+    case llmSettings
+    case appleHealthIRThresholds
 
     var id: Int { String(reflecting: self).hashValue }
 }
@@ -165,6 +167,10 @@ extension Screen {
             AppDiagnostics.RootView(resolver: resolver)
         case .settingsExport:
             SettingsExport.RootView(resolver: resolver)
+        case .llmSettings:
+            LLMSettings.RootView(resolver: resolver)
+        case .appleHealthIRThresholds:
+            AppleHealthIRThresholdsView(resolver: resolver, state: Settings.StateModel())
         }
     }
 

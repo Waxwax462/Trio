@@ -587,7 +587,7 @@ extension Home {
                 }
             }
             .onTapGesture {
-                selectedTab = 3
+                state.showModal(for: .overrideConfig)
             }
         }
 
@@ -604,7 +604,7 @@ extension Home {
                 }
             }
             .onTapGesture {
-                selectedTab = 3
+                state.showModal(for: .overrideConfig)
             }
         }
 
@@ -677,13 +677,11 @@ extension Home {
 
                 Spacer()
 
-                /// to ensure the same position....
                 Image(systemName: "xmark.app")
                     .font(.title)
-                    // clear color for the icon
                     .foregroundStyle(Color.clear)
             }.onTapGesture {
-                selectedTab = 3
+                state.showModal(for: .overrideConfig)
             }
         }
 
@@ -1320,43 +1318,32 @@ extension Home {
                         return nil
                     }()
 
+                    // Left side of FAB
                     NavigationStack { mainView() }
-                        .tabItem { Label("Main", systemImage: "chart.xyaxis.line") }
+                        .tabItem { Label("Home", systemImage: "chart.xyaxis.line") }
                         .badge(carbsRequiredBadge).tag(0)
 
                     NavigationStack { History.RootView(resolver: resolver) }
                         .tabItem { Label("History", systemImage: historySFSymbol) }.tag(1)
 
-                    NavigationStack { Reflections.RootView(resolver: resolver) }
-                        .tabItem {
-                            Label(
-                                "Reflections",
-                                systemImage: "sparkles"
-                            ) }.tag(2)
-
+                    // Center placeholder — tapped by the floating + button overlay
                     Color.clear
                         .tabItem { Label("", systemImage: "circle") }
                         .tag(99)
 
-                    NavigationStack { Adjustments.RootView(resolver: resolver) }
-                        .tabItem {
-                            Label(
-                                "Adjustments",
-                                systemImage: "slider.horizontal.2.gobackward"
-                            ) }.tag(3)
+                    // Right side of FAB
+                    NavigationStack { Reflections.RootView(resolver: resolver) }
+                        .tabItem { Label("Reflections", systemImage: "sparkles") }.tag(2)
 
                     NavigationStack(path: self.$settingsPath) {
-                        Settings.RootView(resolver: resolver) }
-                        .tabItem { Label(
-                            "Settings",
-                            systemImage: "gear"
-                        ) }.tag(4)
+                        Settings.RootView(resolver: resolver)
+                    }
+                    .tabItem { Label("Settings", systemImage: "gear") }.tag(4)
                 }
                 .tint(Color.tabBar)
 
                 Button(
-                    action: {
-                        state.showModal(for: .treatmentView) },
+                    action: { state.showModal(for: .treatmentView) },
                     label: {
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 40))

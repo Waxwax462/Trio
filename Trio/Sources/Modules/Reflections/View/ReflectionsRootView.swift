@@ -30,6 +30,10 @@ extension Reflections {
                         tirSection
                         averageGlucoseSection
                         sampleCountSection
+                        analyzeSection
+                        if let narrative = state.llmNarrative {
+                            narrativeCard(narrative)
+                        }
                     }
                 }
                 .padding(.vertical)
@@ -37,7 +41,10 @@ extension Reflections {
             .background(appState.trioBackgroundColor(for: colorScheme))
             .navigationTitle(String(localized: "Reflections", comment: "Tab title"))
             .navigationBarTitleDisplayMode(.large)
-            .onAppear(perform: configureView)
+            .onAppear {
+                configureView()
+                state.refreshProviderStatus()
+            }
         }
 
         // MARK: - Period Picker
@@ -185,6 +192,70 @@ extension Reflections {
             }
             .padding()
             .background(Color.chart.opacity(0.5), in: RoundedRectangle(cornerRadius: 16))
+            .padding(.horizontal)
+        }
+
+        // MARK: - Analyze Section
+
+        private var analyzeSection: some View {
+            VStack(spacing: 0) {
+                Button {
+                    Task { await state.analyze() }
+                } label: {
+                    HStack {
+                        if state.isAnalyzing {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                                .padding(.trailing, 4)
+                        } else {
+                            Image(systemName: "sparkles")
+                        }
+                        Text(state.isAnalyzing ? "Analyzing…" : "Analyze with AI")
+                            .fontWeight(.medium)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(state.isAnalyzing || state.sampleCount == 0 || !state.hasLLMProvider)
+                .padding(.horizontal)
+
+                if !state.hasLLMProvider {
+                    Text("Configure an AI provider in Settings → Services → AI Settings")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 6)
+                        .padding(.horizontal)
+                }
+            }
+        }
+
+        // MARK: - Narrative Card
+
+        @ViewBuilder private func narrativeCard(_ text: String) -> some View {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Image(systemName: "sparkles")
+                        .foregroundStyle(.purple)
+                    Text("AI Reflection")
+                        .font(.headline)
+                }
+
+                Text(text)
+                    .font(.body)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text("AI-generated • Not medical advice")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            .padding()
+            .background(Color.purple.opacity(0.08), in: RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.purple.opacity(0.2), lineWidth: 1)
+            )
             .padding(.horizontal)
         }
     }

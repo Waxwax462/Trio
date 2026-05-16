@@ -235,6 +235,10 @@
 		CC4400000008000000000001 /* ChatStateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4400000004000000000001 /* ChatStateModel.swift */; };
 		CC4400000009000000000001 /* HomeStateModel+Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4400000005000000000001 /* HomeStateModel+Chat.swift */; };
 		CC440000000A000000000001 /* ChatRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4400000006000000000001 /* ChatRootView.swift */; };
+		LL0100000002000000000001 /* LLMSettingsDataFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = LL0100000001000000000001 /* LLMSettingsDataFlow.swift */; };
+		LL0100000004000000000001 /* LLMSettingsStateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = LL0100000003000000000001 /* LLMSettingsStateModel.swift */; };
+		LL0100000006000000000001 /* LLMSettingsRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = LL0100000005000000000001 /* LLMSettingsRootView.swift */; };
+		AC0100000002000000000001 /* AppleHealthIRThresholdsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0100000001000000000001 /* AppleHealthIRThresholdsView.swift */; };
 		3B47C6102DA0A28F00B0E5EF /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 3B47C60F2DA0A28F00B0E5EF /* FirebaseCrashlytics */; };
 		3B4BA76A2D8DBD690069D5B8 /* CGMBLEKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B4BA75B2D8DBD690069D5B8 /* CGMBLEKit.framework */; };
 		3B4BA76B2D8DBD690069D5B8 /* CGMBLEKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3B4BA75B2D8DBD690069D5B8 /* CGMBLEKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -1128,6 +1132,10 @@
 		CC4400000004000000000001 /* ChatStateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatStateModel.swift; sourceTree = "<group>"; };
 		CC4400000005000000000001 /* HomeStateModel+Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeStateModel+Chat.swift"; sourceTree = "<group>"; };
 		CC4400000006000000000001 /* ChatRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatRootView.swift; sourceTree = "<group>"; };
+		LL0100000001000000000001 /* LLMSettingsDataFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMSettingsDataFlow.swift; sourceTree = "<group>"; };
+		LL0100000003000000000001 /* LLMSettingsStateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMSettingsStateModel.swift; sourceTree = "<group>"; };
+		LL0100000005000000000001 /* LLMSettingsRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMSettingsRootView.swift; sourceTree = "<group>"; };
+		AC0100000001000000000001 /* AppleHealthIRThresholdsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleHealthIRThresholdsView.swift; sourceTree = "<group>"; };
 		3B4BA75B2D8DBD690069D5B8 /* CGMBLEKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CGMBLEKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B4BA75C2D8DBD690069D5B8 /* CGMBLEKitUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CGMBLEKitUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B4BA75D2D8DBD690069D5B8 /* DanaKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = DanaKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1987,6 +1995,7 @@
 				9E56E3626FAD933385101B76 /* History */,
 				EE5500000001000000000001 /* Reflections */,
 				CC4400000001000000000001 /* Chat */,
+				LL0100000007000000000001 /* LLMSettings */,
 				195D80B22AF696EE00D25097 /* DynamicSettings */,
 				C2AA6CF52E1A734A00BF6C16 /* SettingsExport */,
 				DD17454C2C55CA0200211FAC /* GeneralSettings */,
@@ -2985,6 +2994,24 @@
 			path = View;
 			sourceTree = "<group>";
 		};
+		LL0100000007000000000001 /* LLMSettings */ = {
+			isa = PBXGroup;
+			children = (
+				LL0100000001000000000001 /* LLMSettingsDataFlow.swift */,
+				LL0100000003000000000001 /* LLMSettingsStateModel.swift */,
+				LL0100000008000000000001 /* View */,
+			);
+			path = LLMSettings;
+			sourceTree = "<group>";
+		};
+		LL0100000008000000000001 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				LL0100000005000000000001 /* LLMSettingsRootView.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
 		A42F1FEDFFD0DDE00AAD54D3 /* BasalProfileEditor */ = {
 			isa = PBXGroup;
 			children = (
@@ -3441,6 +3468,7 @@
 				DD1745182C543B5700211FAC /* NotificationsView.swift */,
 				DD17451C2C543C5F00211FAC /* ServicesView.swift */,
 				DD1745362C55B74200211FAC /* AlgorithmSettings.swift */,
+				AC0100000001000000000001 /* AppleHealthIRThresholdsView.swift */,
 			);
 			path = Subviews;
 			sourceTree = "<group>";
@@ -4991,6 +5019,10 @@
 				CC4400000008000000000001 /* ChatStateModel.swift in Sources */,
 				CC4400000009000000000001 /* HomeStateModel+Chat.swift in Sources */,
 				CC440000000A000000000001 /* ChatRootView.swift in Sources */,
+				LL0100000002000000000001 /* LLMSettingsDataFlow.swift in Sources */,
+				LL0100000004000000000001 /* LLMSettingsStateModel.swift in Sources */,
+				LL0100000006000000000001 /* LLMSettingsRootView.swift in Sources */,
+				AC0100000002000000000001 /* AppleHealthIRThresholdsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

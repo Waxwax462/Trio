@@ -20,9 +20,6 @@ extension Chat {
                     ToolbarItem(placement: .cancellationAction) {
                         Button("Done") { dismiss() }
                     }
-                    ToolbarItem(placement: .confirmationAction) {
-                        apiKeyButton
-                    }
                 }
             }
             .onAppear { state.context = context }
@@ -31,17 +28,19 @@ extension Chat {
         private var messageList: some View {
             ScrollViewReader { proxy in
                 ScrollView {
-                    if state.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    if !state.hasAPIKey {
                         VStack(spacing: 12) {
                             Image(systemName: "key.fill")
                                 .font(.largeTitle)
                                 .foregroundStyle(.secondary)
-                            Text("Set API key to start chatting with Rheos AI")
+                            Text("Configure an AI provider to start chatting with Rheos AI")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
-                            Button("Set API key…") { showAPIKeyAlert() }
-                                .buttonStyle(.borderedProminent)
+                            Text("Settings → Services → AI Settings")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 4)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.top, 60)
@@ -121,37 +120,5 @@ extension Chat {
             .padding(.vertical, 8)
         }
 
-        private var apiKeyButton: some View {
-            Button {
-                showAPIKeyAlert()
-            } label: {
-                Image(systemName: "key")
-            }
-        }
-
-        private func showAPIKeyAlert() {
-            let alert = UIAlertController(
-                title: "Anthropic API Key",
-                message: "Enter your API key to enable Rheos AI chat.",
-                preferredStyle: .alert
-            )
-            alert.addTextField { field in
-                field.placeholder = "sk-ant-..."
-                field.text = state.apiKey
-                field.isSecureTextEntry = true
-            }
-            alert.addAction(UIAlertAction(title: "Save", style: .default) { _ in
-                state.apiKey = alert.textFields?.first?.text ?? ""
-                state.saveAPIKey()
-            })
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-
-            guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                  let root = scene.windows.first?.rootViewController
-            else { return }
-            var topVC = root
-            while let presented = topVC.presentedViewController { topVC = presented }
-            topVC.present(alert, animated: true)
-        }
     }
 }

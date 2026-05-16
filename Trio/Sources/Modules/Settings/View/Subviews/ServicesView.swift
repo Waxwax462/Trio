@@ -26,7 +26,16 @@ struct ServicesView: BaseView {
                     Text("Tidepool").navigationLink(to: .tidepoolConfig, from: self)
                     if HKHealthStore.isHealthDataAvailable() {
                         Text("Apple Health").navigationLink(to: .healthkit, from: self)
+                        Text("Biometric Thresholds").navigationLink(to: .appleHealthIRThresholds, from: self)
                     }
+                }
+            )
+            .listRowBackground(Color.chart)
+
+            Section(
+                header: Text("AI Integration"),
+                content: {
+                    Text("AI Settings").navigationLink(to: .llmSettings, from: self)
                 }
             )
             .listRowBackground(Color.chart)
