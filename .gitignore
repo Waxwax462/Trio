@@ -80,3 +80,20 @@ fastlane/test_output
 fastlane/FastlaneRunner
 
 ConfigOverride.xcconfig
+
+# Ruflo / Claude AI tooling — runtime files (not committed)
+ruvector.db
+.swarm/
+*.db-wal
+*.db-shm
+.claude/settings.local.json
+.claude-flow/sessions/
+.claude-flow/data/
+.claude-flow/logs/
+.claude-flow/metrics/
+.claude-flow/graph/
+.claude-flow/learning/
+.claude-flow/security/
+.claude-flow/swarm/
+.claude-flow/workflows/
+.claude-flow/hooks/

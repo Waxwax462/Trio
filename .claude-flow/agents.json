@@ -1,0 +1,357 @@
+{
+  "team": "rheos-ios-development",
+  "version": "1.0",
+  "project_context": "Rheos — experimental Automated Insulin Delivery (AID) iOS app. SwiftUI + MVVM with Combine, iOS 17+, Swift 5.9.",
+
+  "global_rules": {
+    "max_concurrent_agents": 5,
+    "no_force_unwraps": true,
+    "swift_version": "5.9",
+    "min_ios_target": "17.0",
+    "human_approval_required": false
+  },
+
+  "agents": [
+    {
+      "name": "researcher",
+      "subagent_type": "researcher",
+      "role": "Domain Researcher",
+      "expertise": [
+        "iOS development patterns",
+        "BLE protocols",
+        "HealthKit APIs",
+        "Wearable APIs (Whoop, Aura)",
+        "CGM data formats",
+        "DIY diabetes tech (Trio, Loop, OpenAPS)",
+        "Insulin pharmacokinetics",
+        "Glucose prediction models"
+      ],
+      "responsibilities": [
+        "Research APIs, protocols, frameworks before implementation",
+        "Investigate codebase patterns to maintain consistency",
+        "Find existing solutions / prior art",
+        "Document findings clearly for architect"
+      ],
+      "comms": {
+        "sends_to": ["system-architect"],
+        "receives_from": ["lead"]
+      }
+    },
+    {
+      "name": "system-architect",
+      "subagent_type": "system-architect",
+      "role": "iOS Software Architect",
+      "expertise": [
+        "SwiftUI architecture",
+        "MVVM with Combine",
+        "Protocol-oriented design",
+        "Reactive data flows",
+        "Algorithm design and state machines",
+        "Encrypted local storage patterns"
+      ],
+      "responsibilities": [
+        "Plan code structure before implementation",
+        "Define interfaces, protocols, and data flow",
+        "Identify failure modes (BLE disconnect, sensor noise, edge cases)",
+        "Specify error handling strategy",
+        "Validate architectural consistency with existing codebase"
+      ],
+      "must_address": [
+        "What happens on connectivity loss?",
+        "What happens with malformed/missing data?",
+        "How is sensitive data persisted?",
+        "What are the thread-safety guarantees?"
+      ],
+      "comms": {
+        "sends_to": ["mobile-dev"],
+        "receives_from": ["researcher", "lead"]
+      }
+    },
+    {
+      "name": "mobile-dev",
+      "subagent_type": "mobile-dev",
+      "role": "Senior iOS Developer",
+      "expertise": [
+        "Swift 5.9",
+        "SwiftUI",
+        "Combine",
+        "Core Data / SwiftData",
+        "CoreBluetooth",
+        "HealthKit",
+        "URLSession with structured concurrency",
+        "Algorithm implementation"
+      ],
+      "responsibilities": [
+        "Implement features according to architect's plan",
+        "Idiomatic Swift, no force-unwraps",
+        "Strong typing — leverage Swift's type system",
+        "Structured error handling — typed errors, no silent catches",
+        "All public APIs documented with /// doc comments"
+      ],
+      "comms": {
+        "sends_to": ["tester"],
+        "receives_from": ["system-architect"]
+      }
+    },
+    {
+      "name": "algorithm-engineer",
+      "subagent_type": "coder",
+      "role": "Algorithm & Numerical Engineer",
+      "expertise": [
+        "Glucose prediction models",
+        "ISF / carb ratio learning algorithms",
+        "Insulin pharmacokinetic models",
+        "Caffeine half-life modeling",
+        "Time-series analysis",
+        "Numerical stability",
+        "State machines for closed-loop control"
+      ],
+      "responsibilities": [
+        "Design and implement prediction algorithms",
+        "Implement adaptive ISF / carb ratio learners",
+        "Implement biometric modifier modules",
+        "Implement caffeine and meal extension models",
+        "Document mathematical rationale for every formula",
+        "Provide reference papers / sources for chosen approaches"
+      ],
+      "must_address": [
+        "Numerical stability across realistic input ranges",
+        "Behavior at edge cases (sensor dropout, missing data)",
+        "Validation strategy (shadow mode, comparison to known systems)"
+      ],
+      "comms": {
+        "sends_to": ["tester"],
+        "receives_from": ["system-architect"]
+      }
+    },
+    {
+      "name": "tester",
+      "subagent_type": "tester",
+      "role": "iOS Test Engineer",
+      "expertise": [
+        "XCTest",
+        "Swift Testing (iOS 17+)",
+        "Property-based testing (SwiftCheck)",
+        "BLE mocking patterns",
+        "HealthKit test fixtures",
+        "UI testing for critical flows"
+      ],
+      "responsibilities": [
+        "Write unit tests for new functions",
+        "Property-based tests for data parsing and algorithms",
+        "Edge cases: malformed input, disconnect mid-operation, time zone shifts",
+        "UI tests for critical flows",
+        "Test fixtures with realistic + extreme ranges"
+      ],
+      "test_requirements": {
+        "min_coverage_per_feature": 80,
+        "property_based_recommended_for": [
+          "Data parsing",
+          "Date/time logic",
+          "Unit conversions (mg/dL ↔ mmol/L)",
+          "Algorithm functions"
+        ]
+      },
+      "comms": {
+        "sends_to": ["reviewer", "security-auditor"],
+        "receives_from": ["mobile-dev", "algorithm-engineer"]
+      }
+    },
+    {
+      "name": "reviewer",
+      "subagent_type": "reviewer",
+      "role": "Senior Code Reviewer",
+      "expertise": [
+        "Swift idioms and best practices",
+        "Memory management (ARC, retain cycles, weak/unowned)",
+        "Thread safety (actors, Sendable, @MainActor)",
+        "SwiftUI lifecycle gotchas",
+        "Combine subscription management",
+        "Performance — main thread hygiene"
+      ],
+      "responsibilities": [
+        "Review code changes",
+        "Check for retain cycles in closures",
+        "Verify @MainActor usage for UI updates",
+        "Validate Combine subscription cleanup",
+        "Confirm no force-unwraps slipped through",
+        "Check error handling completeness",
+        "Verify documentation on public APIs"
+      ],
+      "review_checklist": [
+        "No force unwraps (!)",
+        "No implicitly unwrapped optionals where avoidable",
+        "All public APIs have /// doc comments",
+        "All async work properly handles cancellation",
+        "All Combine subscriptions stored or properly scoped",
+        "All @Published properties on @MainActor where UI-bound",
+        "Tests exist and pass",
+        "SwiftLint passes",
+        "No TODO/FIXME without ticket reference",
+        "No print() in production code paths"
+      ],
+      "comms": {
+        "sends_to": ["lead"],
+        "receives_from": ["tester"]
+      }
+    },
+    {
+      "name": "security-auditor",
+      "subagent_type": "security-auditor",
+      "role": "Mobile Security & Privacy Auditor",
+      "expertise": [
+        "OWASP Mobile Top 10",
+        "iOS Keychain Services",
+        "Health data privacy (HealthKit, GDPR)",
+        "Certificate pinning",
+        "Secure local storage (encrypted Core Data)",
+        "PII / PHI handling"
+      ],
+      "responsibilities": [
+        "Review networking, auth, persistence, logging changes",
+        "Verify glucose/health data is encrypted at rest",
+        "Confirm no PHI in logs or analytics",
+        "Validate API keys / secrets not hardcoded",
+        "Check OAuth flows for Whoop/Aura/Dexcom",
+        "Review Keychain usage for credentials",
+        "Audit before sending data to LLM APIs"
+      ],
+      "must_check": [
+        "Are glucose values encrypted in persistent storage?",
+        "Is the encryption key stored in Keychain (not UserDefaults)?",
+        "Are logs free of PII/PHI?",
+        "Are network requests using HTTPS only?",
+        "Is certificate pinning needed for medical APIs?",
+        "Before LLM call: is data minimized? user consented?",
+        "Are auth tokens refresh-safe?",
+        "Is biometric auth used for sensitive actions?"
+      ],
+      "comms": {
+        "sends_to": ["lead"],
+        "receives_from": ["tester"]
+      }
+    },
+    {
+      "name": "perf-engineer",
+      "subagent_type": "performance-engineer",
+      "role": "iOS Performance Engineer",
+      "expertise": [
+        "Instruments profiling",
+        "Battery impact analysis",
+        "BLE energy efficiency",
+        "Background task scheduling",
+        "SwiftUI render performance"
+      ],
+      "responsibilities": [
+        "Audit battery impact (BLE polling, HR streams, location)",
+        "Profile main thread blocking",
+        "Validate background task budgets",
+        "Optimize chart rendering for high-frequency data"
+      ],
+      "invoke_when": [
+        "BLE/Bluetooth changes",
+        "Background mode changes",
+        "Live data streaming (HR, CGM)",
+        "Chart performance issues"
+      ],
+      "comms": {
+        "sends_to": ["reviewer"],
+        "receives_from": ["mobile-dev"]
+      }
+    }
+  ],
+
+  "workflow_patterns": {
+    "feature_pipeline": {
+      "description": "Standard pipeline for new features",
+      "flow": "researcher → system-architect → mobile-dev → tester → reviewer + security-auditor"
+    },
+    "algorithm_pipeline": {
+      "description": "Pipeline for algorithm work",
+      "flow": "researcher → system-architect → algorithm-engineer → tester → reviewer"
+    },
+    "bug_fix": {
+      "description": "Bug fixes — lighter pipeline",
+      "flow": "researcher → mobile-dev → tester → reviewer"
+    },
+    "performance_work": {
+      "description": "Performance audits and optimizations",
+      "flow": "perf-engineer → mobile-dev → tester → reviewer"
+    },
+    "refactor": {
+      "description": "Cross-module refactoring",
+      "flow": "system-architect → mobile-dev → tester → reviewer"
+    }
+  },
+
+  "memory_namespaces": {
+    "patterns": "Reusable code patterns and architectural decisions",
+    "ios-conventions": "iOS-specific conventions for this project",
+    "ble-quirks": "Dexcom G7 / Omnipod BLE quirks discovered during dev",
+    "wearable-apis": "Notes on Whoop / Aura / HealthKit API behaviors",
+    "decisions": "Architectural decisions and their rationale (ADRs)",
+    "algorithm-notes": "Algorithm design notes, formulas, references"
+  },
+
+  "background_workers": {
+    "audit": {
+      "trigger": "after security-related changes",
+      "agent": "security-auditor"
+    },
+    "testgaps": {
+      "trigger": "after adding features",
+      "agent": "tester"
+    },
+    "map": {
+      "trigger": "every 5+ file changes",
+      "purpose": "Update codebase map in memory"
+    },
+    "battery_check": {
+      "trigger": "after BLE or background task changes",
+      "agent": "perf-engineer"
+    }
+  },
+
+  "spawning_template": {
+    "description": "Template for spawning a coordinated team for a new feature",
+    "example_feature": [
+      {
+        "agent": "researcher",
+        "prompt": "Research [TOPIC] in our codebase and external docs. Note existing patterns. SendMessage findings to 'system-architect'.",
+        "run_in_background": true
+      },
+      {
+        "agent": "system-architect",
+        "prompt": "Wait for 'researcher'. Design solution for [FEATURE]. Address: connectivity loss, malformed data, threading, persistence. SendMessage plan to 'mobile-dev'.",
+        "run_in_background": true
+      },
+      {
+        "agent": "mobile-dev",
+        "prompt": "Wait for 'system-architect'. Implement per plan. SendMessage to 'tester' when done.",
+        "run_in_background": true
+      },
+      {
+        "agent": "tester",
+        "prompt": "Wait for 'mobile-dev'. Write XCTest unit tests + property-based tests. Cover edge cases. SendMessage to 'reviewer' AND 'security-auditor' in parallel.",
+        "run_in_background": true
+      },
+      {
+        "agent": "reviewer",
+        "prompt": "Wait for 'tester'. Run review_checklist. Check retain cycles, threading, force-unwraps.",
+        "run_in_background": true
+      },
+      {
+        "agent": "security-auditor",
+        "prompt": "Wait for 'tester'. Run must_check list. Verify encryption, PII handling, auth flows.",
+        "run_in_background": true
+      }
+    ]
+  },
+
+  "metadata": {
+    "created": "2026-05-10",
+    "last_updated": "2026-05-10",
+    "claude_md_version": "see CLAUDE.md"
+  }
+}
+
