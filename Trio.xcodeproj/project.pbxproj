@@ -225,6 +225,11 @@
 		EE5500000009000000000001 /* ReflectionsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5500000005000000000001 /* ReflectionsProvider.swift */; };
 		EE550000000A000000000001 /* ReflectionsStateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5500000006000000000001 /* ReflectionsStateModel.swift */; };
 		EE550000000B000000000001 /* ReflectionsRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5500000007000000000001 /* ReflectionsRootView.swift */; };
+		AH9900000007000000000001 /* AppleHealthIRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AH9900000001000000000001 /* AppleHealthIRService.swift */; };
+		AH9900000008000000000001 /* AppleHealthIREntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = AH9900000002000000000001 /* AppleHealthIREntry.swift */; };
+		AH9900000009000000000001 /* HomeStateModel+AppleHealthIR.swift in Sources */ = {isa = PBXBuildFile; fileRef = AH9900000003000000000001 /* HomeStateModel+AppleHealthIR.swift */; };
+		AH990000000A000000000001 /* AppleHealthIRSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AH9900000004000000000001 /* AppleHealthIRSheet.swift */; };
+		AH990000000B000000000001 /* BiometricIRDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AH9900000005000000000001 /* BiometricIRDetailView.swift */; };
 		FF770003 /* LLMService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF770002 /* LLMService.swift */; };
 		CC4400000007000000000001 /* ChatDataFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4400000003000000000001 /* ChatDataFlow.swift */; };
 		CC4400000008000000000001 /* ChatStateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4400000004000000000001 /* ChatStateModel.swift */; };
@@ -1112,6 +1117,11 @@
 		EE5500000005000000000001 /* ReflectionsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionsProvider.swift; sourceTree = "<group>"; };
 		EE5500000006000000000001 /* ReflectionsStateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionsStateModel.swift; sourceTree = "<group>"; };
 		EE5500000007000000000001 /* ReflectionsRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionsRootView.swift; sourceTree = "<group>"; };
+		AH9900000001000000000001 /* AppleHealthIRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleHealthIRService.swift; sourceTree = "<group>"; };
+		AH9900000002000000000001 /* AppleHealthIREntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleHealthIREntry.swift; sourceTree = "<group>"; };
+		AH9900000003000000000001 /* HomeStateModel+AppleHealthIR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeStateModel+AppleHealthIR.swift"; sourceTree = "<group>"; };
+		AH9900000004000000000001 /* AppleHealthIRSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleHealthIRSheet.swift; sourceTree = "<group>"; };
+		AH9900000005000000000001 /* BiometricIRDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricIRDetailView.swift; sourceTree = "<group>"; };
 		FF770002 /* LLMService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMService.swift; sourceTree = "<group>"; };
 		CC4400000003000000000001 /* ChatDataFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatDataFlow.swift; sourceTree = "<group>"; };
 		CC4400000004000000000001 /* ChatStateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatStateModel.swift; sourceTree = "<group>"; };
@@ -2078,6 +2088,7 @@
 				FF660003 /* HomeStateModel+Biometrics.swift */,
 				CC3300000004000000000001 /* HomeStateModel+Meal.swift */,
 				DD4400000004000000000001 /* HomeStateModel+SickDay.swift */,
+				AH9900000003000000000001 /* HomeStateModel+AppleHealthIR.swift */,
 				CC4400000005000000000001 /* HomeStateModel+Chat.swift */,
 				58645B972CA2D16A008AFCE7 /* HomeStateModel+Setup */,
 				3811DE2C25C9D49500A708ED /* View */,
@@ -2093,6 +2104,8 @@
 				DD4400000005000000000001 /* SickDayBanner.swift */,
 				BB2200000005000000000001 /* CaffeineLogSheet.swift */,
 				CC3300000003000000000001 /* MealLogSheet.swift */,
+				AH9900000004000000000001 /* AppleHealthIRSheet.swift */,
+				AH9900000005000000000001 /* BiometricIRDetailView.swift */,
 				3833B51E260264AC003021B3 /* Chart */,
 				3833B51F260264B6003021B3 /* Header */,
 			);
@@ -2135,6 +2148,7 @@
 				AA1100000001000000000001 /* HeartRate */,
 				BB2200000001000000000001 /* Caffeine */,
 				FF660005 /* Biometrics */,
+				AH9900000006000000000001 /* AppleHealthIR */,
 				CC3300000001000000000001 /* Meal */,
 				FF770001 /* LLM */,
 				3BF85FE22E427312000D7351 /* IOB */,
@@ -2464,6 +2478,7 @@
 				38A9260425F012D8009E3739 /* CarbRatios.swift */,
 				38D0B3D825EC07C400CB6E88 /* CarbsEntry.swift */,
 				BB2200000003000000000001 /* CaffeineEntry.swift */,
+				AH9900000002000000000001 /* AppleHealthIREntry.swift */,
 				19D4E4EA29FC6A9F00351451 /* Charts.swift */,
 				DD6D67E32C9C253500660C9B /* ColorSchemeOption.swift */,
 				DD9ECB692CA99F6C00AA7C45 /* CommandPayload.swift */,
@@ -3950,6 +3965,14 @@
 			path = Caffeine;
 			sourceTree = "<group>";
 		};
+		AH9900000006000000000001 /* AppleHealthIR */ = {
+			isa = PBXGroup;
+			children = (
+				AH9900000001000000000001 /* AppleHealthIRService.swift */,
+			);
+			path = AppleHealthIR;
+			sourceTree = "<group>";
+		};
 		CC3300000001000000000001 /* Meal */ = {
 			isa = PBXGroup;
 			children = (
@@ -4882,6 +4905,11 @@
 				D6D02515BBFBE64FEBE89856 /* HistoryRootView.swift in Sources */,
 				DD4400000008000000000001 /* HomeStateModel+SickDay.swift in Sources */,
 				DD4400000009000000000001 /* SickDayBanner.swift in Sources */,
+				AH9900000007000000000001 /* AppleHealthIRService.swift in Sources */,
+				AH9900000008000000000001 /* AppleHealthIREntry.swift in Sources */,
+				AH9900000009000000000001 /* HomeStateModel+AppleHealthIR.swift in Sources */,
+				AH990000000A000000000001 /* AppleHealthIRSheet.swift in Sources */,
+				AH990000000B000000000001 /* BiometricIRDetailView.swift in Sources */,
 				EE5500000008000000000001 /* ReflectionsDataFlow.swift in Sources */,
 				EE5500000009000000000001 /* ReflectionsProvider.swift in Sources */,
 				EE550000000A000000000001 /* ReflectionsStateModel.swift in Sources */,
