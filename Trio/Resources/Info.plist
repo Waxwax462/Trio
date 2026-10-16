@@ -108,7 +108,6 @@
 		<string>processing</string>
 		<string>remote-notification</string>
 		<string>audio</string>
-		<string>healthkit</string>
 	</array>
 	<key>UIDesignRequiresCompatibility</key>
 	<false/>
