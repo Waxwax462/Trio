@@ -101,6 +101,20 @@ extension AlarmWindows {
                         }.padding(.top)
                     }.padding(.bottom)
                 }.listRowBackground(Color.chart)
+
+                Section(
+                    header: Text("Alarm Behavior"),
+                    footer: Text(
+                        "During the day, alarms only vibrate (repeating) until acknowledged. At night, alarms play their sound. Vibration keeps repeating while Trio is running, also in the background."
+                    )
+                ) {
+                    Toggle(isOn: $store.configuration.vibrateOnlyDuringDay) {
+                        HStack {
+                            Image(systemName: "iphone.radiowaves.left.and.right").foregroundStyle(.orange)
+                            Text("Vibrate Only During Day")
+                        }
+                    }
+                }.listRowBackground(Color.chart)
             }
             .scrollContentBackground(.hidden)
             .background(appState.trioBackgroundColor(for: colorScheme))

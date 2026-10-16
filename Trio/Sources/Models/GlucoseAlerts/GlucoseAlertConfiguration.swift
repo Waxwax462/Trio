@@ -5,21 +5,27 @@ struct GlucoseAlertConfiguration: Codable, Equatable {
     var nightStart: TimeOfDay
     /// Force Trio alarms on even when the CGM advertises its own.
     var forceTrioAlertsWhenCGMProvidesOwn: Bool
+    /// During the day window alarms only vibrate (repeating) instead of
+    /// playing their sound; at night the configured sound plays.
+    var vibrateOnlyDuringDay: Bool
 
     init(
         dayStart: TimeOfDay = TimeOfDay(hour: 6, minute: 0),
         nightStart: TimeOfDay = TimeOfDay(hour: 22, minute: 0),
-        forceTrioAlertsWhenCGMProvidesOwn: Bool = false
+        forceTrioAlertsWhenCGMProvidesOwn: Bool = false,
+        vibrateOnlyDuringDay: Bool = false
     ) {
         self.dayStart = dayStart
         self.nightStart = nightStart
         self.forceTrioAlertsWhenCGMProvidesOwn = forceTrioAlertsWhenCGMProvidesOwn
+        self.vibrateOnlyDuringDay = vibrateOnlyDuringDay
     }
 
     private enum CodingKeys: String, CodingKey {
         case dayStart
         case nightStart
         case forceTrioAlertsWhenCGMProvidesOwn
+        case vibrateOnlyDuringDay
     }
 
     init(from decoder: Decoder) throws {
@@ -30,6 +36,7 @@ struct GlucoseAlertConfiguration: Codable, Equatable {
             Bool.self,
             forKey: .forceTrioAlertsWhenCGMProvidesOwn
         ) ?? false
+        vibrateOnlyDuringDay = try container.decodeIfPresent(Bool.self, forKey: .vibrateOnlyDuringDay) ?? false
     }
 
     /// Resolve whether `date` falls into the user's "night" window. Mirrors

@@ -76,7 +76,43 @@ final class CriticalAlertAudioPlayer {
         }
     }
 
+    /// Repeating vibration without audible sound. A looping silent track under
+    /// a `.playback` session keeps Trio running in the background (the app has
+    /// the `audio` background mode), so the vibration timer isn't suspended.
+    func vibrateRepeatedly() {
+        stop()
+        startVibration()
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
+            try session.setActive(true, options: [])
+            let p = try AVAudioPlayer(data: Self.silentWAV)
+            p.numberOfLoops = -1
+            p.volume = 1.0
+            p.prepareToPlay()
+            if p.play() { player = p }
+        } catch {
+            os_log("Failed to start silent keep-alive: %{public}@", log: log, type: .error, String(describing: error))
+        }
+    }
+
+    /// One second of 8 kHz mono 16-bit PCM silence.
+    private static let silentWAV: Data = {
+        let sampleRate: UInt32 = 8000
+        let dataSize = sampleRate * 2
+        var d = Data()
+        func u32(_ v: UInt32) { withUnsafeBytes(of: v.littleEndian) { d.append(contentsOf: $0) } }
+        func u16(_ v: UInt16) { withUnsafeBytes(of: v.littleEndian) { d.append(contentsOf: $0) } }
+        d.append(contentsOf: Array("RIFF".utf8)); u32(36 + dataSize)
+        d.append(contentsOf: Array("WAVEfmt ".utf8)); u32(16)
+        u16(1); u16(1); u32(sampleRate); u32(sampleRate * 2); u16(2); u16(16)
+        d.append(contentsOf: Array("data".utf8)); u32(dataSize)
+        d.append(Data(count: Int(dataSize)))
+        return d
+    }()
+
     private func startVibration() {
+        vibrationTimer?.invalidate()
         AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
         vibrationTimer = Timer.scheduledTimer(withTimeInterval: vibrationInterval, repeats: true) { _ in
             AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)

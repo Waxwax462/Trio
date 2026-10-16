@@ -180,7 +180,15 @@ final class BaseTrioAlertManager: TrioAlertManager, Injectable {
     /// Only fires for immediate-trigger alerts; delayed/repeating go
     /// through UNNotification at fire time. No-op when muted or non-critical.
     private func playCriticalAudioFallbackIfNeeded(_ alert: Alert, muted: Bool) {
-        guard alert.interruptionLevel == .critical, !muted else { return }
+        guard !muted else { return }
+        if case .vibrate? = alert.sound {
+            Task { @MainActor in
+                if criticalAudioPlayer == nil { criticalAudioPlayer = CriticalAlertAudioPlayer() }
+                criticalAudioPlayer?.vibrateRepeatedly()
+            }
+            return
+        }
+        guard alert.interruptionLevel == .critical else { return }
         // Honor `playsSound: false` (alert was issued with sound: nil) —
         // user explicitly opted out of audio on this alarm.
         guard let soundName = alert.sound?.filename else { return }
@@ -222,7 +230,7 @@ final class BaseTrioAlertManager: TrioAlertManager, Injectable {
         // Override Silence & Focus, day/night window. Everything else
         // (Trio-internal glucose, owned by `GlucoseAlertCoordinator`) is
         // passed through with the level and sound its producer chose.
-        let effective: Alert
+        var effective: Alert
         if let entry = AlertCatalogRegistry.lookup(alert.identifier) {
             // Tier comes from the catalog, never from the post-override
             // level: a Time-Sensitive alarm with "Override Silence & Focus"
@@ -246,6 +254,24 @@ final class BaseTrioAlertManager: TrioAlertManager, Injectable {
             effective = Self.applyDeviceSeverityConfig(config, entry: entry, to: alert)
         } else {
             effective = alert
+        }
+
+        // Day window: swap the tone for repeating vibration. Alerts already
+        // configured without sound stay silent.
+        let alarmConfiguration = GlucoseAlertsStore.shared.configuration
+        if alarmConfiguration.vibrateOnlyDuringDay,
+           !alarmConfiguration.isNight(at: now),
+           effective.sound?.filename != nil
+        {
+            effective = Alert(
+                identifier: effective.identifier,
+                foregroundContent: effective.foregroundContent,
+                backgroundContent: effective.backgroundContent,
+                trigger: effective.trigger,
+                interruptionLevel: effective.interruptionLevel,
+                sound: .vibrate,
+                metadata: effective.metadata
+            )
         }
 
         // Critical alerts pierce the snooze/mute window. Everything else is
