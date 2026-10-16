@@ -38,6 +38,8 @@ struct TrioSettings: JSON, Equatable, Encodable {
     var minuteInterval: Decimal = 30
     var delay: Decimal = 60
     var useAppleHealth: Bool = false
+    var activityTempTargetAutomationEnabled: Bool = false
+    var activityTempTargetRules: [String: String] = [:]
     var smoothGlucose: Bool = false
     var eA1cDisplayUnit: EstimatedA1cDisplayUnit = .percent
     var high: Decimal = 180
@@ -192,6 +194,20 @@ extension TrioSettings: Decodable {
 
         if let useAppleHealth = try? container.decode(Bool.self, forKey: .useAppleHealth) {
             settings.useAppleHealth = useAppleHealth
+        }
+
+        if let activityTempTargetAutomationEnabled = try? container.decode(
+            Bool.self,
+            forKey: .activityTempTargetAutomationEnabled
+        ) {
+            settings.activityTempTargetAutomationEnabled = activityTempTargetAutomationEnabled
+        }
+
+        if let activityTempTargetRules = try? container.decode(
+            [String: String].self,
+            forKey: .activityTempTargetRules
+        ) {
+            settings.activityTempTargetRules = activityTempTargetRules
         }
 
         if let glucoseBadge = try? container.decode(Bool.self, forKey: .glucoseBadge) {

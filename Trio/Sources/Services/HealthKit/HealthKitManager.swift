@@ -14,6 +14,8 @@ protocol HealthKitManager {
     func hasGlucoseWritePermission() -> Bool
     /// Requests user to give permissions on using HealthKit
     func requestPermission() async throws -> Bool
+    /// Requests workout-read permission and enables or disables workout-based Temp Targets.
+    func setActivityTempTargetAutomationEnabled(_ enabled: Bool) async throws
     /// Checks whether permissions are granted for Trio to write to Health
     func checkWriteToHealthPermissions(objectTypeToHealthStore: HKObjectType) -> Bool
     /// Save blood glucose to Health store
@@ -54,8 +56,14 @@ final class BaseHealthKitManager: HealthKitManager, Injectable {
     @Injected() private var carbsStorage: CarbsStorage!
     @Injected() private var pumpHistoryStorage: PumpHistoryStorage!
     @Injected() private var deviceDataManager: DeviceDataManager!
+    @Injected() private var adjustmentManager: AdjustmentManager!
 
     let viewContext = CoreDataStack.shared.persistentContainer.viewContext
+    private var workoutObserverQuery: HKObserverQuery?
+    @MainActor private var workoutProcessingTask: Task<Void, Never>?
+
+    private let workoutAutomationEnabledAtKey = "activityTempTargetAutomationEnabledAt"
+    private let processedWorkoutIDsKey = "activityTempTargetProcessedWorkoutIDs"
 
     // MARK: - Upload triggers
 
@@ -128,6 +136,9 @@ final class BaseHealthKitManager: HealthKitManager, Injectable {
               AppleHealthConfig.healthBGObject != nil else { return }
 
         debug(.service, "HealthKitManager did create")
+        if settingsManager.settings.activityTempTargetAutomationEnabled {
+            startWorkoutMonitoring(resetBaseline: false)
+        }
     }
 
     private func registerUploadControllers() {
@@ -184,6 +195,154 @@ final class BaseHealthKitManager: HealthKitManager, Injectable {
                 }
             }
         }
+    }
+
+    func setActivityTempTargetAutomationEnabled(_ enabled: Bool) async throws {
+        guard isAvailableOnCurrentDevice else {
+            throw HKError.notAvailableOnCurrentDevice
+        }
+
+        if enabled {
+            guard workoutObserverQuery == nil else { return }
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                healthKitStore.requestAuthorization(
+                    toShare: [],
+                    read: [HKObjectType.workoutType()]
+                ) { _, error in
+                    if let error {
+                        continuation.resume(throwing: error)
+                    } else {
+                        continuation.resume(returning: ())
+                    }
+                }
+            }
+
+            var settings = settingsManager.settings
+            settings.activityTempTargetAutomationEnabled = true
+            settingsManager.settings = settings
+            startWorkoutMonitoring(resetBaseline: true)
+        } else {
+            guard workoutObserverQuery != nil else { return }
+            var settings = settingsManager.settings
+            settings.activityTempTargetAutomationEnabled = false
+            settingsManager.settings = settings
+            stopWorkoutMonitoring()
+        }
+    }
+
+    private func startWorkoutMonitoring(resetBaseline: Bool) {
+        let defaults = UserDefaults.standard
+        if resetBaseline || defaults.object(forKey: workoutAutomationEnabledAtKey) == nil {
+            defaults.set(Date(), forKey: workoutAutomationEnabledAtKey)
+            defaults.removeObject(forKey: processedWorkoutIDsKey)
+        }
+
+        guard workoutObserverQuery == nil else {
+            fetchRecentWorkouts()
+            return
+        }
+
+        let workoutType = HKObjectType.workoutType()
+        let query = HKObserverQuery(sampleType: workoutType, predicate: nil) { [weak self] _, completionHandler, error in
+            if let error {
+                warning(.service, "HealthKit workout observer failed", error: error)
+                completionHandler()
+                return
+            }
+            self?.fetchRecentWorkouts(completion: completionHandler)
+        }
+        workoutObserverQuery = query
+        healthKitStore.execute(query)
+        healthKitStore.enableBackgroundDelivery(for: workoutType, frequency: .immediate) { success, error in
+            if let error {
+                warning(.service, "Could not enable HealthKit workout background delivery", error: error)
+            } else if !success {
+                warning(.service, "HealthKit did not enable workout background delivery")
+            }
+        }
+        fetchRecentWorkouts()
+    }
+
+    private func stopWorkoutMonitoring() {
+        if let workoutObserverQuery {
+            healthKitStore.stop(workoutObserverQuery)
+            self.workoutObserverQuery = nil
+        }
+        healthKitStore.disableBackgroundDelivery(for: HKObjectType.workoutType()) { success, error in
+            if let error {
+                warning(.service, "Could not disable HealthKit workout background delivery", error: error)
+            } else if !success {
+                warning(.service, "HealthKit did not disable workout background delivery")
+            }
+        }
+    }
+
+    private func fetchRecentWorkouts(completion: @escaping () -> Void = {}) {
+        guard let enabledAt = UserDefaults.standard.object(forKey: workoutAutomationEnabledAtKey) as? Date else {
+            completion()
+            return
+        }
+        let predicate = HKQuery.predicateForSamples(withStart: enabledAt, end: nil, options: .strictStartDate)
+        let query = HKSampleQuery(
+            sampleType: HKObjectType.workoutType(),
+            predicate: predicate,
+            limit: HKObjectQueryNoLimit,
+            sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: true)]
+        ) { [weak self] _, samples, error in
+            if let error {
+                warning(.service, "HealthKit workout query failed", error: error)
+                completion()
+                return
+            }
+            let workouts = (samples as? [HKWorkout] ?? []).map {
+                ActivityWorkoutSample(
+                    id: $0.uuid.uuidString,
+                    activityType: String($0.workoutActivityType.rawValue)
+                )
+            }
+            Task { @MainActor [weak self] in
+                guard let self else {
+                    completion()
+                    return
+                }
+                let previous = self.workoutProcessingTask
+                let current = Task { @MainActor [weak self] in
+                    await previous?.value
+                    await self?.processWorkouts(workouts)
+                    completion()
+                }
+                self.workoutProcessingTask = current
+            }
+        }
+        healthKitStore.execute(query)
+    }
+
+    @MainActor private func processWorkouts(_ workouts: [ActivityWorkoutSample]) async {
+        guard settingsManager.settings.activityTempTargetAutomationEnabled else { return }
+
+        let defaults = UserDefaults.standard
+        var processedIDs = defaults.stringArray(forKey: processedWorkoutIDsKey) ?? []
+        var processedSet = Set(processedIDs)
+
+        for workout in workouts where !processedSet.contains(workout.id) {
+            if let presetID = settingsManager.settings.activityTempTargetRules[workout.activityType] {
+                do {
+                    _ = try await adjustmentManager.activateTempTarget(
+                        .presetID(presetID),
+                        source: .app,
+                        waitForUpload: false
+                    )
+                    debug(.service, "Applied activity Temp Target rule for workout type \(workout.activityType)")
+                } catch {
+                    warning(.service, "Could not apply activity Temp Target rule", error: error)
+                    continue
+                }
+            }
+            processedIDs.append(workout.id)
+            processedSet.insert(workout.id)
+        }
+
+        defaults.set(processedIDs, forKey: processedWorkoutIDsKey)
     }
 
     // Glucose Upload
@@ -756,4 +915,9 @@ private struct InsulinBasal {
     var amount: Decimal
     var startDelivery: Date
     var endDelivery: Date
+}
+
+private struct ActivityWorkoutSample: Sendable {
+    let id: String
+    let activityType: String
 }

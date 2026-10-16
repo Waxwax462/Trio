@@ -84,4 +84,23 @@ import Testing
             #expect(json["dosingMode"] as? String == mode.rawValue)
         }
     }
+
+    @Suite("Activity Temp Target Settings") struct ActivityTempTargetSettingsTests {
+        @Test("Existing settings keep workout automation off") func existingSettingsDefaultToOff() throws {
+            let settings = try JSONDecoder().decode(TrioSettings.self, from: Data("{}".utf8))
+            #expect(!settings.activityTempTargetAutomationEnabled)
+            #expect(settings.activityTempTargetRules.isEmpty)
+        }
+
+        @Test("Activity rules round-trip") func activityRulesRoundTrip() throws {
+            let settings = TrioSettings(
+                activityTempTargetAutomationEnabled: true,
+                activityTempTargetRules: ["52": "4F904F22-2E2B-491A-888A-A6D0E2F635B5"]
+            )
+            let encoded = try JSONEncoder().encode(settings)
+            let decoded = try JSONDecoder().decode(TrioSettings.self, from: encoded)
+            #expect(decoded.activityTempTargetAutomationEnabled)
+            #expect(decoded.activityTempTargetRules == settings.activityTempTargetRules)
+        }
+    }
 }
