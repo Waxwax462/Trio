@@ -289,6 +289,49 @@ final class BaseTrioAlertManager: TrioAlertManager, Injectable {
             self.liveAlerts[effective.identifier] = effective
         }
         recordIssued(effective)
+        deliver(effective)
+        if case .immediate = effective.trigger {
+            startRepeatTimer(for: effective.identifier)
+        }
+    }
+
+    // MARK: - Re-trigger until acknowledged
+
+    private static let retriggerInterval: TimeInterval = 60
+    private var retriggerTimers: [Alert.Identifier: DispatchSourceTimer] = [:]
+
+    /// Re-delivers a still-live alert every minute until it is acknowledged
+    /// or retracted. Timers are only touched on `queue`.
+    private func startRepeatTimer(for identifier: Alert.Identifier) {
+        queue.async {
+            self.retriggerTimers[identifier]?.cancel()
+            let timer = DispatchSource.makeTimerSource(queue: self.queue)
+            timer.schedule(
+                deadline: .now() + Self.retriggerInterval,
+                repeating: Self.retriggerInterval
+            )
+            timer.setEventHandler { [weak self] in
+                guard let self, let alert = self.liveAlerts[identifier] else {
+                    self?.cancelRepeatTimer(for: identifier)
+                    return
+                }
+                if alert.interruptionLevel != .critical, self.muter.shouldMute(at: Date()) { return }
+                debug(.service, "TrioAlertManager re-triggering \(identifier.value)")
+                self.deliver(alert)
+            }
+            self.retriggerTimers[identifier] = timer
+            timer.resume()
+        }
+    }
+
+    private func cancelRepeatTimer(for identifier: Alert.Identifier) {
+        queue.async {
+            self.retriggerTimers.removeValue(forKey: identifier)?.cancel()
+        }
+    }
+
+    private func deliver(_ effective: Alert) {
+        let now = Date()
         let muted = muter.shouldMute(at: now)
         modalScheduler.schedule(effective)
         // AlarmKit sounds critical alerts itself; posting the notification with
@@ -335,6 +378,7 @@ final class BaseTrioAlertManager: TrioAlertManager, Injectable {
     }
 
     func retractAlert(identifier: Alert.Identifier) {
+        cancelRepeatTimer(for: identifier)
         queue.async {
             self.liveAlerts.removeValue(forKey: identifier)
         }
@@ -380,6 +424,7 @@ final class BaseTrioAlertManager: TrioAlertManager, Injectable {
     // MARK: - Acknowledgement
 
     func handleAcknowledgement(identifier: Alert.Identifier) {
+        cancelRepeatTimer(for: identifier)
         modalScheduler.unschedule(identifier: identifier)
         userNotificationScheduler.unschedule(identifier: identifier)
         Task { @MainActor in
