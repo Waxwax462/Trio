@@ -89,7 +89,8 @@ final class CriticalAlertAudioPlayer {
                 return
             }
             player = p
-            startVolumeObservation() critical-alert audio playback (duration=%{public}.2fs)", log: log, type: .info, p.duration)
+            startVolumeObservation()
+            os_log("Started critical-alert audio playback (duration=%{public}.2fs)", log: log, type: .info, p.duration)
         } catch {
             os_log("Failed to start audio playback: %{public}@", log: log, type: .error, String(describing: error))
         }
