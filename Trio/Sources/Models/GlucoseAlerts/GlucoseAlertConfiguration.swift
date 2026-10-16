@@ -11,19 +11,24 @@ struct GlucoseAlertConfiguration: Codable, Equatable {
     /// Pressing a volume button acknowledges an alarm played by the in-app
     /// audio fallback.
     var acknowledgeWithVolumeButton: Bool
+    /// Minutes after which a day-time vibrate-only alarm that is still
+    /// unacknowledged switches to its sound. 0 = never.
+    var escalationMinutes: Int
 
     init(
         dayStart: TimeOfDay = TimeOfDay(hour: 6, minute: 0),
         nightStart: TimeOfDay = TimeOfDay(hour: 22, minute: 0),
         forceTrioAlertsWhenCGMProvidesOwn: Bool = false,
         vibrateOnlyDuringDay: Bool = false,
-        acknowledgeWithVolumeButton: Bool = false
+        acknowledgeWithVolumeButton: Bool = false,
+        escalationMinutes: Int = 0
     ) {
         self.dayStart = dayStart
         self.nightStart = nightStart
         self.forceTrioAlertsWhenCGMProvidesOwn = forceTrioAlertsWhenCGMProvidesOwn
         self.vibrateOnlyDuringDay = vibrateOnlyDuringDay
         self.acknowledgeWithVolumeButton = acknowledgeWithVolumeButton
+        self.escalationMinutes = escalationMinutes
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -32,6 +37,7 @@ struct GlucoseAlertConfiguration: Codable, Equatable {
         case forceTrioAlertsWhenCGMProvidesOwn
         case vibrateOnlyDuringDay
         case acknowledgeWithVolumeButton
+        case escalationMinutes
     }
 
     init(from decoder: Decoder) throws {
@@ -44,6 +50,7 @@ struct GlucoseAlertConfiguration: Codable, Equatable {
         ) ?? false
         vibrateOnlyDuringDay = try container.decodeIfPresent(Bool.self, forKey: .vibrateOnlyDuringDay) ?? false
         acknowledgeWithVolumeButton = try container.decodeIfPresent(Bool.self, forKey: .acknowledgeWithVolumeButton) ?? false
+        escalationMinutes = try container.decodeIfPresent(Int.self, forKey: .escalationMinutes) ?? 0
     }
 
     /// Resolve whether `date` falls into the user's "night" window. Mirrors

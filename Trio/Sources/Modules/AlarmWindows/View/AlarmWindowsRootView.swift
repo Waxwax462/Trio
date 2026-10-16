@@ -115,6 +115,20 @@ extension AlarmWindows {
                         }
                     }
 
+                    if store.configuration.vibrateOnlyDuringDay {
+                        Picker(selection: $store.configuration.escalationMinutes) {
+                            Text("Never").tag(0)
+                            ForEach([1, 2, 3, 5, 10, 15], id: \.self) { minutes in
+                                Text("After \(minutes) min").tag(minutes)
+                            }
+                        } label: {
+                            HStack {
+                                Image(systemName: "bell.and.waves.left.and.right.fill").foregroundStyle(.red)
+                                Text("Add Sound If Unacknowledged")
+                            }
+                        }
+                    }
+
                     Toggle(isOn: $store.configuration.acknowledgeWithVolumeButton) {
                         HStack {
                             Image(systemName: "speaker.wave.2.fill").foregroundStyle(.blue)

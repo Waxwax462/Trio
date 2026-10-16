@@ -266,10 +266,12 @@ final class BaseTrioAlertManager: TrioAlertManager, Injectable {
         // Day window: swap the tone for repeating vibration. Alerts already
         // configured without sound stay silent.
         let alarmConfiguration = GlucoseAlertsStore.shared.configuration
+        var escalationAlert: Alert?
         if alarmConfiguration.vibrateOnlyDuringDay,
            !alarmConfiguration.isNight(at: now),
            effective.sound?.filename != nil
         {
+            escalationAlert = effective
             effective = Alert(
                 identifier: effective.identifier,
                 foregroundContent: effective.foregroundContent,
@@ -292,8 +294,16 @@ final class BaseTrioAlertManager: TrioAlertManager, Injectable {
             debug(.service, "TrioAlertManager throttled \(effective.identifier.value)")
             return
         }
+        let escalationTarget = escalationAlert
         queue.async {
             self.liveAlerts[effective.identifier] = effective
+            self.escalations.removeValue(forKey: effective.identifier)
+            if let escalationTarget, alarmConfiguration.escalationMinutes > 0 {
+                self.escalations[effective.identifier] = (
+                    alert: escalationTarget,
+                    due: now.addingTimeInterval(TimeInterval(alarmConfiguration.escalationMinutes) * 60)
+                )
+            }
         }
         recordIssued(effective)
         deliver(effective)
@@ -306,6 +316,9 @@ final class BaseTrioAlertManager: TrioAlertManager, Injectable {
 
     private static let retriggerInterval: TimeInterval = 60
     private var retriggerTimers: [Alert.Identifier: DispatchSourceTimer] = [:]
+    /// Sound variant to switch to when a day-time vibrate-only alert stays
+    /// unacknowledged past the configured escalation delay. Only touched on `queue`.
+    private var escalations: [Alert.Identifier: (alert: Alert, due: Date)] = [:]
 
     /// Re-delivers a still-live alert every minute until it is acknowledged
     /// or retracted. Timers are only touched on `queue`.
@@ -323,8 +336,14 @@ final class BaseTrioAlertManager: TrioAlertManager, Injectable {
                     return
                 }
                 if alert.interruptionLevel != .critical, self.muter.shouldMute(at: Date()) { return }
+                var toDeliver = alert
+                if let escalation = self.escalations[identifier], Date() >= escalation.due {
+                    toDeliver = escalation.alert
+                    self.liveAlerts[identifier] = escalation.alert
+                    self.escalations.removeValue(forKey: identifier)
+                }
                 debug(.service, "TrioAlertManager re-triggering \(identifier.value)")
-                self.deliver(alert)
+                self.deliver(toDeliver)
             }
             self.retriggerTimers[identifier] = timer
             timer.resume()
@@ -334,6 +353,7 @@ final class BaseTrioAlertManager: TrioAlertManager, Injectable {
     private func cancelRepeatTimer(for identifier: Alert.Identifier) {
         queue.async {
             self.retriggerTimers.removeValue(forKey: identifier)?.cancel()
+            self.escalations.removeValue(forKey: identifier)
         }
     }
 

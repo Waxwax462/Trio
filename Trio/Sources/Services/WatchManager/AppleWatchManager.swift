@@ -27,6 +27,7 @@ final class BaseWatchManager: NSObject, WCSessionDelegate, Injectable, WatchMana
     @Injected() private var bolusCalculationManager: BolusCalculationManager!
     @Injected() private var iobService: IOBService!
     @Injected() private var notificationsManager: UserNotificationsManager!
+    @Injected() private var trioAlertManager: TrioAlertManager!
 
     private var units: GlucoseUnits = .mgdL
     private var glucoseColorScheme: GlucoseColorScheme = .staticColor
@@ -667,6 +668,10 @@ final class BaseWatchManager: NSObject, WCSessionDelegate, Injectable, WatchMana
 
             if let snoozeMinutes = message[WatchMessageKeys.snoozeDuration] as? Int {
                 debug(.watchManager, "📱 Received snooze request from watch: \(snoozeMinutes) minutes")
+                if snoozeMinutes == 0 {
+                    self.trioAlertManager.acknowledgeAllOutstanding()
+                    return
+                }
                 await self.notificationsManager.applySnooze(for: TimeInterval(snoozeMinutes * 60))
                 return
             } else if let bolusAmount = message[WatchMessageKeys.bolus] as? Double,
@@ -792,6 +797,10 @@ final class BaseWatchManager: NSObject, WCSessionDelegate, Injectable, WatchMana
             debug(.watchManager, "📱 Received snooze userInfo from watch: \(snoozeMinutes) minutes")
             Task { @MainActor [weak self] in
                 guard let self else { return }
+                if snoozeMinutes == 0 {
+                    self.trioAlertManager.acknowledgeAllOutstanding()
+                    return
+                }
                 await self.notificationsManager.applySnooze(for: TimeInterval(snoozeMinutes * 60))
             }
         }

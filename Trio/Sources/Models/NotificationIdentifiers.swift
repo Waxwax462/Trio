@@ -6,17 +6,24 @@ enum NotificationCategoryIdentifier: String {
 }
 
 enum NotificationResponseAction: String, CaseIterable {
+    case stop = "Trio.stop"
     case snooze15 = "Trio.snooze15"
     case snooze1hr = "Trio.snooze1hr"
     case snooze3hr = "Trio.snooze3hr"
     case snooze6hr = "Trio.snooze6hr"
 
+    /// Snooze choices only; `.stop` is offered separately on notifications.
+    static var allCases: [NotificationResponseAction] { [.snooze15, .snooze1hr, .snooze3hr, .snooze6hr] }
+
     var duration: TimeInterval {
         TimeInterval(minutes) * 60
     }
 
+    /// 0 means "stop the alarm without snoozing".
     var minutes: Int {
         switch self {
+        case .stop:
+            return 0
         case .snooze15:
             return 15
         case .snooze1hr:
@@ -30,6 +37,8 @@ enum NotificationResponseAction: String, CaseIterable {
 
     var localizedTitle: String {
         switch self {
+        case .stop:
+            return String(localized: "Stop Alarm", comment: "Acknowledge the alarm without snoozing")
         case .snooze15:
             return String(localized: "Snooze 15 min", comment: "Snooze glucose alerts for 15 minutes")
         case .snooze1hr:
@@ -46,7 +55,7 @@ enum NotificationResponseAction: String, CaseIterable {
 
 enum NotificationCategoryFactory {
     static func createGlucoseCategory() -> UNNotificationCategory {
-        let snoozeActions = NotificationResponseAction.allCases.map { action in
+        let snoozeActions = ([NotificationResponseAction.stop] + NotificationResponseAction.allCases).map { action in
             UNNotificationAction(
                 identifier: action.rawValue,
                 title: action.localizedTitle,
