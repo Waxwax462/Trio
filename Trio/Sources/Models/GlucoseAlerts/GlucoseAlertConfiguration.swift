@@ -8,17 +8,22 @@ struct GlucoseAlertConfiguration: Codable, Equatable {
     /// During the day window alarms only vibrate (repeating) instead of
     /// playing their sound; at night the configured sound plays.
     var vibrateOnlyDuringDay: Bool
+    /// Pressing a volume button acknowledges an alarm played by the in-app
+    /// audio fallback.
+    var acknowledgeWithVolumeButton: Bool
 
     init(
         dayStart: TimeOfDay = TimeOfDay(hour: 6, minute: 0),
         nightStart: TimeOfDay = TimeOfDay(hour: 22, minute: 0),
         forceTrioAlertsWhenCGMProvidesOwn: Bool = false,
-        vibrateOnlyDuringDay: Bool = false
+        vibrateOnlyDuringDay: Bool = false,
+        acknowledgeWithVolumeButton: Bool = false
     ) {
         self.dayStart = dayStart
         self.nightStart = nightStart
         self.forceTrioAlertsWhenCGMProvidesOwn = forceTrioAlertsWhenCGMProvidesOwn
         self.vibrateOnlyDuringDay = vibrateOnlyDuringDay
+        self.acknowledgeWithVolumeButton = acknowledgeWithVolumeButton
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -26,6 +31,7 @@ struct GlucoseAlertConfiguration: Codable, Equatable {
         case nightStart
         case forceTrioAlertsWhenCGMProvidesOwn
         case vibrateOnlyDuringDay
+        case acknowledgeWithVolumeButton
     }
 
     init(from decoder: Decoder) throws {
@@ -37,6 +43,7 @@ struct GlucoseAlertConfiguration: Codable, Equatable {
             forKey: .forceTrioAlertsWhenCGMProvidesOwn
         ) ?? false
         vibrateOnlyDuringDay = try container.decodeIfPresent(Bool.self, forKey: .vibrateOnlyDuringDay) ?? false
+        acknowledgeWithVolumeButton = try container.decodeIfPresent(Bool.self, forKey: .acknowledgeWithVolumeButton) ?? false
     }
 
     /// Resolve whether `date` falls into the user's "night" window. Mirrors

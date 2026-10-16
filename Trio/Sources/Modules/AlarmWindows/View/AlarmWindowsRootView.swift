@@ -114,6 +114,13 @@ extension AlarmWindows {
                             Text("Vibrate Only During Day")
                         }
                     }
+
+                    Toggle(isOn: $store.configuration.acknowledgeWithVolumeButton) {
+                        HStack {
+                            Image(systemName: "speaker.wave.2.fill").foregroundStyle(.blue)
+                            Text("Volume Button Stops Alarm")
+                        }
+                    }
                 }.listRowBackground(Color.chart)
             }
             .scrollContentBackground(.hidden)

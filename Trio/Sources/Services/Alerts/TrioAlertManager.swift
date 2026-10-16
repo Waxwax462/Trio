@@ -183,8 +183,7 @@ final class BaseTrioAlertManager: TrioAlertManager, Injectable {
         guard !muted else { return }
         if case .vibrate? = alert.sound {
             Task { @MainActor in
-                if criticalAudioPlayer == nil { criticalAudioPlayer = CriticalAlertAudioPlayer() }
-                criticalAudioPlayer?.vibrateRepeatedly()
+                audioPlayer(for: alert.identifier).vibrateRepeatedly()
             }
             return
         }
@@ -196,17 +195,25 @@ final class BaseTrioAlertManager: TrioAlertManager, Injectable {
             // AlarmKit pierces silent/Focus and survives app suspension.
             if alarmScheduler == nil { alarmScheduler = CriticalAlertAlarmScheduler() }
             let scheduled = alarmScheduler?.scheduleAlarm(for: alert) { [weak self] in
-                Task { @MainActor in self?.playAudioFallback(soundNamed: soundName) }
+                Task { @MainActor in self?.playAudioFallback(soundNamed: soundName, for: alert.identifier) }
             } ?? false
             guard !scheduled else { return }
             // Fallback: in-process audio. Only sounds while Trio is running.
-            playAudioFallback(soundNamed: soundName)
+            playAudioFallback(soundNamed: soundName, for: alert.identifier)
         }
     }
 
-    @MainActor private func playAudioFallback(soundNamed soundName: String) {
+    @MainActor private func audioPlayer(for identifier: Alert.Identifier) -> CriticalAlertAudioPlayer {
         if criticalAudioPlayer == nil { criticalAudioPlayer = CriticalAlertAudioPlayer() }
-        criticalAudioPlayer?.play(soundNamed: soundName)
+        let player = criticalAudioPlayer!
+        player.onVolumeButtonPressed = GlucoseAlertsStore.shared.configuration.acknowledgeWithVolumeButton
+            ? { [weak self] in self?.handleAcknowledgement(identifier: identifier) }
+            : nil
+        return player
+    }
+
+    @MainActor private func playAudioFallback(soundNamed soundName: String, for identifier: Alert.Identifier) {
+        audioPlayer(for: identifier).play(soundNamed: soundName)
     }
 
     // MARK: - Issue / Retract

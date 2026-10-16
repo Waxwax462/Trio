@@ -21,6 +21,25 @@ final class CriticalAlertAudioPlayer {
 
     var isPlaying: Bool { player?.isPlaying ?? false }
 
+    /// Called when a volume button press is detected while an alarm is active.
+    var onVolumeButtonPressed: (() -> Void)?
+    private var volumeObservation: NSKeyValueObservation?
+
+    /// Volume changes made by `volumeBooster` right after start must not count
+    /// as a button press, so detection only begins after a short grace period.
+    private func startVolumeObservation() {
+        volumeObservation?.invalidate()
+        volumeObservation = nil
+        guard onVolumeButtonPressed != nil else { return }
+        let armedAt = Date().addingTimeInterval(3)
+        volumeObservation = AVAudioSession.sharedInstance().observe(\.outputVolume, options: [.new]) { [weak self] _, _ in
+            Task { @MainActor in
+                guard let self, Date() >= armedAt else { return }
+                self.onVolumeButtonPressed?()
+            }
+        }
+    }
+
     /// Start (or restart) looping playback of a bundled critical alert sound.
     /// Loops until `stop()` is called from `retractAlert` /
     /// `handleAcknowledgement` in `BaseTrioAlertManager` — modeled on the
@@ -70,7 +89,7 @@ final class CriticalAlertAudioPlayer {
                 return
             }
             player = p
-            os_log("Started critical-alert audio playback (duration=%{public}.2fs)", log: log, type: .info, p.duration)
+            startVolumeObservation() critical-alert audio playback (duration=%{public}.2fs)", log: log, type: .info, p.duration)
         } catch {
             os_log("Failed to start audio playback: %{public}@", log: log, type: .error, String(describing: error))
         }
@@ -90,7 +109,10 @@ final class CriticalAlertAudioPlayer {
             p.numberOfLoops = -1
             p.volume = 1.0
             p.prepareToPlay()
-            if p.play() { player = p }
+            if p.play() {
+                player = p
+                startVolumeObservation()
+            }
         } catch {
             os_log("Failed to start silent keep-alive: %{public}@", log: log, type: .error, String(describing: error))
         }
@@ -122,6 +144,8 @@ final class CriticalAlertAudioPlayer {
     /// Stop playback if any. Safe to call when not playing.
     func stop() {
         guard player != nil || vibrationTimer != nil else { return }
+        volumeObservation?.invalidate()
+        volumeObservation = nil
         player?.stop()
         player = nil
         vibrationTimer?.invalidate()
