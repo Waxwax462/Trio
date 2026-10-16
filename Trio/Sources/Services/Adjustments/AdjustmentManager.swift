@@ -16,6 +16,7 @@ enum AdjustmentSource: String {
     case remote
     case shortcut
     case watch
+    case healthKit
 }
 
 struct AdjustmentSummary: Equatable {
@@ -36,6 +37,7 @@ struct AdjustmentOutcome: Equatable {
 enum AdjustmentError: LocalizedError, Equatable {
     case presetNotFound(String)
     case nothingActive
+    case invalidWorkoutRecoveryConfiguration
     case persistenceFailed(String)
 
     var errorDescription: String? {
@@ -44,6 +46,8 @@ enum AdjustmentError: LocalizedError, Equatable {
             return String(localized: "Preset \"\(name)\" not found.", comment: "Adjustment preset not found")
         case .nothingActive:
             return String(localized: "Nothing is currently running.", comment: "No active adjustment to cancel")
+        case .invalidWorkoutRecoveryConfiguration:
+            return String(localized: "The workout recovery settings are invalid.", comment: "Invalid workout recovery configuration")
         case .persistenceFailed:
             // The associated value carries the Core Data detail for the log, not for the reader.
             return String(localized: "Could not save the change.", comment: "Adjustment could not be saved")
@@ -80,6 +84,13 @@ protocol AdjustmentManager {
     ) async throws -> AdjustmentOutcome
 
     @discardableResult func cancelTempTarget(source: AdjustmentSource, waitForUpload: Bool) async throws -> AdjustmentOutcome
+
+    @discardableResult func activateWorkoutRecoveryOverride(
+        percentage: Int,
+        durationMinutes: Int,
+        source: AdjustmentSource,
+        waitForUpload: Bool
+    ) async throws -> AdjustmentOutcome
 }
 
 extension AdjustmentManager {
@@ -103,6 +114,19 @@ extension AdjustmentManager {
 
     @discardableResult func cancelTempTarget(source: AdjustmentSource) async throws -> AdjustmentOutcome {
         try await cancelTempTarget(source: source, waitForUpload: false)
+    }
+
+    @discardableResult func activateWorkoutRecoveryOverride(
+        percentage: Int,
+        durationMinutes: Int,
+        source: AdjustmentSource
+    ) async throws -> AdjustmentOutcome {
+        try await activateWorkoutRecoveryOverride(
+            percentage: percentage,
+            durationMinutes: durationMinutes,
+            source: source,
+            waitForUpload: false
+        )
     }
 }
 
@@ -146,6 +170,31 @@ final class BaseAdjustmentManager: AdjustmentManager, Injectable, @unchecked Sen
         let outcome = try await serializer.run { try await self.commitOverride(activating: nil) }
         debug(.service, "Override cancelled from \(source.rawValue): \(outcome.logDescription)")
         await applyOverrideSideEffects(source: source, waitForUpload: waitForUpload)
+        return outcome
+    }
+
+    @discardableResult func activateWorkoutRecoveryOverride(
+        percentage: Int,
+        durationMinutes: Int,
+        source: AdjustmentSource,
+        waitForUpload: Bool
+    ) async throws -> AdjustmentOutcome {
+        guard (40...95).contains(percentage),
+              percentage.isMultiple(of: 5),
+              (15...1440).contains(durationMinutes)
+        else {
+            throw AdjustmentError.invalidWorkoutRecoveryConfiguration
+        }
+
+        let (outcome, orefTarget) = try await serializer.run {
+            try await self.commitWorkoutRecoveryOverride(percentage: percentage, durationMinutes: durationMinutes)
+        }
+        debug(.service, "Workout recovery Override activated from \(source.rawValue): \(outcome.logDescription)")
+        await applyWorkoutRecoverySideEffects(
+            orefTarget: orefTarget,
+            source: source,
+            waitForUpload: waitForUpload
+        )
         return outcome
     }
 
@@ -195,6 +244,108 @@ final class BaseAdjustmentManager: AdjustmentManager, Injectable, @unchecked Sen
             try self.save(context)
             return AdjustmentOutcome(started: started, ended: ended)
         }
+    }
+
+    private func commitWorkoutRecoveryOverride(
+        percentage: Int,
+        durationMinutes: Int
+    ) async throws -> (AdjustmentOutcome, TempTarget?) {
+        let context = makeContext()
+        context.name = "commitWorkoutRecoveryOverride"
+
+        return try await context.perform {
+            let now = Date()
+            let activeOverrides = try self.fetchActiveOverrides(in: context)
+            let activeTempTargets = try self.fetchActiveTempTargets(in: context)
+            let recoveryOverride = OverrideStored(context: context)
+            recoveryOverride.id = UUID().uuidString
+            recoveryOverride.name = String(localized: "Workout Recovery")
+            recoveryOverride.date = now
+            recoveryOverride.duration = NSDecimalNumber(value: durationMinutes)
+            recoveryOverride.indefinite = false
+            recoveryOverride.percentage = Double(percentage)
+            recoveryOverride.smbIsOff = false
+            recoveryOverride.isPreset = false
+            recoveryOverride.enabled = true
+            recoveryOverride.isUploadedToNS = false
+            recoveryOverride.target = NSDecimalNumber(value: 0)
+            recoveryOverride.advancedSettings = false
+            recoveryOverride.isfAndCr = false
+            recoveryOverride.isf = false
+            recoveryOverride.cr = false
+            recoveryOverride.smbIsScheduledOff = false
+            recoveryOverride.start = NSDecimalNumber(value: 0)
+            recoveryOverride.end = NSDecimalNumber(value: 0)
+            recoveryOverride.smbMinutes = NSDecimalNumber(value: 0)
+            recoveryOverride.uamMinutes = NSDecimalNumber(value: 0)
+
+            var ended: [AdjustmentSummary] = []
+            for row in activeOverrides {
+                let endDate = self.effectiveEndDate(
+                    start: row.date,
+                    duration: row.duration,
+                    indefinite: row.indefinite,
+                    now: now
+                )
+                let run = OverrideRunStored(context: context)
+                run.id = UUID()
+                run.name = row.name
+                run.startDate = row.date ?? endDate
+                run.endDate = endDate
+                run.target = row.target ?? 0
+                run.override = row
+                run.isUploadedToNS = false
+
+                row.enabled = false
+                ended.append(AdjustmentSummary(row: row, startDate: run.startDate ?? endDate, endDate: endDate))
+            }
+
+            for row in activeTempTargets {
+                let endDate = self.effectiveEndDate(start: row.date, duration: row.duration, indefinite: false, now: now)
+                let run = TempTargetRunStored(context: context)
+                run.id = UUID()
+                run.name = row.name
+                run.startDate = row.date ?? endDate
+                run.endDate = endDate
+                run.target = row.target ?? 0
+                run.tempTarget = row
+                run.isUploadedToNS = false
+                row.enabled = false
+                ended.append(AdjustmentSummary(row: row, startDate: run.startDate ?? endDate, endDate: endDate))
+            }
+
+            try self.save(context)
+            let orefTarget = activeTempTargets.isEmpty ? nil : TempTarget.cancel(at: now)
+            let outcome = AdjustmentOutcome(
+                started: AdjustmentSummary(row: recoveryOverride, startDate: now, endDate: nil),
+                ended: ended
+            )
+            return (outcome, orefTarget)
+        }
+    }
+
+    private func applyWorkoutRecoverySideEffects(
+        orefTarget: TempTarget?,
+        source: AdjustmentSource,
+        waitForUpload: Bool
+    ) async {
+        if let orefTarget {
+            tempTargetStorage.saveTempTargetsToStorage([orefTarget])
+        }
+        if waitForUpload {
+            await nightscoutManager.uploadOverrides()
+            if orefTarget != nil {
+                await nightscoutManager.uploadTempTargets()
+            }
+        } else {
+            let pipelines: [NightscoutUploadPipeline] = orefTarget == nil ? [.overrides] : [.overrides, .tempTargets]
+            requestNightscoutUpload(pipelines, source: source.rawValue)
+        }
+        Foundation.NotificationCenter.default.post(name: .didUpdateOverrideConfiguration, object: nil)
+        if orefTarget != nil {
+            Foundation.NotificationCenter.default.post(name: .didUpdateTempTargetConfiguration, object: nil)
+        }
+        recomputeDetermination()
     }
 
     private func applyOverrideSideEffects(source: AdjustmentSource, waitForUpload: Bool) async {

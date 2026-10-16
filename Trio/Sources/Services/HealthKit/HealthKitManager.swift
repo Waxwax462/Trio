@@ -14,8 +14,8 @@ protocol HealthKitManager {
     func hasGlucoseWritePermission() -> Bool
     /// Requests user to give permissions on using HealthKit
     func requestPermission() async throws -> Bool
-    /// Requests workout-read permission and enables or disables workout-based Temp Targets.
-    func setActivityTempTargetAutomationEnabled(_ enabled: Bool) async throws
+    /// Requests workout-read permission and enables or disables workout recovery automation.
+    func setWorkoutRecoveryAutomationEnabled(_ enabled: Bool) async throws
     /// Checks whether permissions are granted for Trio to write to Health
     func checkWriteToHealthPermissions(objectTypeToHealthStore: HKObjectType) -> Bool
     /// Save blood glucose to Health store
@@ -62,8 +62,8 @@ final class BaseHealthKitManager: HealthKitManager, Injectable {
     private var workoutObserverQuery: HKObserverQuery?
     @MainActor private var workoutProcessingTask: Task<Void, Never>?
 
-    private let workoutAutomationEnabledAtKey = "activityTempTargetAutomationEnabledAt"
-    private let processedWorkoutIDsKey = "activityTempTargetProcessedWorkoutIDs"
+    private let workoutAutomationEnabledAtKey = "workoutRecoveryAutomationEnabledAt"
+    private let processedWorkoutIDsKey = "workoutRecoveryProcessedWorkoutIDs"
 
     // MARK: - Upload triggers
 
@@ -136,7 +136,7 @@ final class BaseHealthKitManager: HealthKitManager, Injectable {
               AppleHealthConfig.healthBGObject != nil else { return }
 
         debug(.service, "HealthKitManager did create")
-        if settingsManager.settings.activityTempTargetAutomationEnabled {
+        if settingsManager.settings.workoutRecoveryAutomationEnabled {
             startWorkoutMonitoring(resetBaseline: false)
         }
     }
@@ -197,7 +197,7 @@ final class BaseHealthKitManager: HealthKitManager, Injectable {
         }
     }
 
-    func setActivityTempTargetAutomationEnabled(_ enabled: Bool) async throws {
+    func setWorkoutRecoveryAutomationEnabled(_ enabled: Bool) async throws {
         guard isAvailableOnCurrentDevice else {
             throw HKError.notAvailableOnCurrentDevice
         }
@@ -218,13 +218,13 @@ final class BaseHealthKitManager: HealthKitManager, Injectable {
             }
 
             var settings = settingsManager.settings
-            settings.activityTempTargetAutomationEnabled = true
+            settings.workoutRecoveryAutomationEnabled = true
             settingsManager.settings = settings
             startWorkoutMonitoring(resetBaseline: true)
         } else {
             guard workoutObserverQuery != nil else { return }
             var settings = settingsManager.settings
-            settings.activityTempTargetAutomationEnabled = false
+            settings.workoutRecoveryAutomationEnabled = false
             settingsManager.settings = settings
             stopWorkoutMonitoring()
         }
@@ -295,10 +295,7 @@ final class BaseHealthKitManager: HealthKitManager, Injectable {
                 return
             }
             let workouts = (samples as? [HKWorkout] ?? []).map {
-                ActivityWorkoutSample(
-                    id: $0.uuid.uuidString,
-                    activityType: String($0.workoutActivityType.rawValue)
-                )
+                ActivityWorkoutSample(id: $0.uuid.uuidString)
             }
             Task { @MainActor [weak self] in
                 guard let self else {
@@ -318,25 +315,29 @@ final class BaseHealthKitManager: HealthKitManager, Injectable {
     }
 
     @MainActor private func processWorkouts(_ workouts: [ActivityWorkoutSample]) async {
-        guard settingsManager.settings.activityTempTargetAutomationEnabled else { return }
+        let settings = settingsManager.settings
+        guard settings.workoutRecoveryAutomationEnabled else { return }
 
         let defaults = UserDefaults.standard
         var processedIDs = defaults.stringArray(forKey: processedWorkoutIDsKey) ?? []
         var processedSet = Set(processedIDs)
 
         for workout in workouts where !processedSet.contains(workout.id) {
-            if let presetID = settingsManager.settings.activityTempTargetRules[workout.activityType] {
+            if settings.workoutRecoveryBasalPercentage < 100 {
                 do {
-                    _ = try await adjustmentManager.activateTempTarget(
-                        .presetID(presetID),
-                        source: .app,
+                    _ = try await adjustmentManager.activateWorkoutRecoveryOverride(
+                        percentage: settings.workoutRecoveryBasalPercentage,
+                        durationMinutes: settings.workoutRecoveryDurationMinutes,
+                        source: .healthKit,
                         waitForUpload: false
                     )
-                    debug(.service, "Applied activity Temp Target rule for workout type \(workout.activityType)")
+                    debug(.service, "Applied workout recovery Override")
                 } catch {
-                    warning(.service, "Could not apply activity Temp Target rule", error: error)
+                    warning(.service, "Could not apply workout recovery Override", error: error)
                     continue
                 }
+            } else {
+                debug(.service, "Skipped workout recovery Override because basal percentage is 100%")
             }
             processedIDs.append(workout.id)
             processedSet.insert(workout.id)
@@ -919,5 +920,4 @@ private struct InsulinBasal {
 
 private struct ActivityWorkoutSample: Sendable {
     let id: String
-    let activityType: String
 }

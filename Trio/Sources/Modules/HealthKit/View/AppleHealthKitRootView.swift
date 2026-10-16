@@ -65,45 +65,32 @@ extension AppleHealthKit {
                 }
 
                 Section(
-                    header: Text("Workout Temp Targets"),
+                    header: Text("Workout Recovery"),
                     footer: Text(
-                        "Trio can read new completed workouts from Apple Health and apply the selected Temp Target preset using its saved duration. Applying a workout rule replaces any currently active Temp Target. Workouts are usually available after Apple Fitness saves them, so the target may start after the activity. Health access can be managed in Settings > Health > Data Access & Devices."
+                        "When a completed workout of any activity type is saved to Apple Health, Trio can apply a temporary basal-rate reduction for the selected duration. This replaces active Overrides and Temp Targets. Initial values are 80% for 120 minutes; they are examples, not a therapy recommendation. Only enable automation if the settings match your personal treatment plan. At 100%, no recovery Override is applied. Health access can be managed in Settings > Health > Data Access & Devices."
                     )
                 ) {
                     Toggle(
-                        "Apply Temp Targets From Workouts",
-                        isOn: $state.activityTempTargetAutomationEnabled
-                    ).disabled(state.isUpdatingActivityAutomation)
+                        "Apply Recovery Override After Workouts",
+                        isOn: $state.workoutRecoveryAutomationEnabled
+                    ).disabled(state.isUpdatingWorkoutRecoveryAutomation)
 
-                    if let error = state.activityAutomationError {
+                    if let error = state.workoutRecoveryAutomationError {
                         Text(error).foregroundStyle(.red)
                     }
 
-                    if state.activityTempTargetAutomationEnabled {
-                        if state.tempTargetPresets.isEmpty {
-                            Text("Create Temp Target presets in Adjustments before assigning workout rules.")
-                                .foregroundStyle(.secondary)
+                    Picker("Basal Rate During Recovery", selection: $state.workoutRecoveryBasalPercentage) {
+                        ForEach(Array(stride(from: 40, through: 100, by: 5)), id: \.self) { percentage in
+                            Text("\(percentage)%").tag(percentage)
                         }
+                    }
 
-                        ForEach(AppleHealthWorkoutActivity.common) { activity in
-                            Picker(
-                                activity.title,
-                                selection: Binding(
-                                    get: { state.activityTempTargetRules[activity.id] ?? "" },
-                                    set: { state.setTempTargetPreset($0, for: activity) }
-                                )
-                            ) {
-                                Text("No Preset").tag("")
-                                ForEach(state.tempTargetPresets, id: \.objectID) { preset in
-                                    Text(preset.name ?? String(localized: "Temp Target"))
-                                        .tag(preset.id?.uuidString ?? "")
-                                }
-                                if let selectedID = state.activityTempTargetRules[activity.id],
-                                   !state.tempTargetPresets.contains(where: { $0.id?.uuidString == selectedID })
-                                {
-                                    Text("Preset unavailable").tag(selectedID)
-                                }
-                            }
+                    Stepper(value: $state.workoutRecoveryDurationMinutes, in: 15...1440, step: 15) {
+                        HStack {
+                            Text("Recovery Duration")
+                            Spacer()
+                            Text("\(state.workoutRecoveryDurationMinutes) min")
+                                .foregroundStyle(.secondary)
                         }
                     }
                 }.listRowBackground(Color.chart)

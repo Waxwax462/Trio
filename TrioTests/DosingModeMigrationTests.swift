@@ -85,22 +85,44 @@ import Testing
         }
     }
 
-    @Suite("Activity Temp Target Settings") struct ActivityTempTargetSettingsTests {
+    @Suite("Workout Recovery Settings") struct WorkoutRecoverySettingsTests {
         @Test("Existing settings keep workout automation off") func existingSettingsDefaultToOff() throws {
             let settings = try JSONDecoder().decode(TrioSettings.self, from: Data("{}".utf8))
-            #expect(!settings.activityTempTargetAutomationEnabled)
-            #expect(settings.activityTempTargetRules.isEmpty)
+            #expect(!settings.workoutRecoveryAutomationEnabled)
+            #expect(settings.workoutRecoveryBasalPercentage == 80)
+            #expect(settings.workoutRecoveryDurationMinutes == 120)
         }
 
-        @Test("Activity rules round-trip") func activityRulesRoundTrip() throws {
+        @Test("Global recovery settings round-trip") func recoverySettingsRoundTrip() throws {
             let settings = TrioSettings(
-                activityTempTargetAutomationEnabled: true,
-                activityTempTargetRules: ["52": "4F904F22-2E2B-491A-888A-A6D0E2F635B5"]
+                workoutRecoveryAutomationEnabled: true,
+                workoutRecoveryBasalPercentage: 75,
+                workoutRecoveryDurationMinutes: 120
             )
             let encoded = try JSONEncoder().encode(settings)
             let decoded = try JSONDecoder().decode(TrioSettings.self, from: encoded)
-            #expect(decoded.activityTempTargetAutomationEnabled)
-            #expect(decoded.activityTempTargetRules == settings.activityTempTargetRules)
+            #expect(decoded.workoutRecoveryAutomationEnabled)
+            #expect(decoded.workoutRecoveryBasalPercentage == 75)
+            #expect(decoded.workoutRecoveryDurationMinutes == 120)
+        }
+
+        @Test("Legacy per-activity settings do not enable recovery automation") func legacyActivitySettingsAreIgnored() throws {
+            let legacySettings = """
+                {"activityTempTargetAutomationEnabled":true,"activityTempTargetRules":{"52":"preset-id"}}
+                """
+            let decoded = try JSONDecoder().decode(TrioSettings.self, from: Data(legacySettings.utf8))
+            #expect(!decoded.workoutRecoveryAutomationEnabled)
+            #expect(decoded.workoutRecoveryBasalPercentage == 80)
+        }
+
+        @Test("Invalid recovery settings disable automation") func invalidRecoverySettingsDisableAutomation() throws {
+            let invalidSettings = """
+                {"workoutRecoveryAutomationEnabled":true,"workoutRecoveryBasalPercentage":83,"workoutRecoveryDurationMinutes":0}
+                """
+            let decoded = try JSONDecoder().decode(TrioSettings.self, from: Data(invalidSettings.utf8))
+            #expect(!decoded.workoutRecoveryAutomationEnabled)
+            #expect(decoded.workoutRecoveryBasalPercentage == 80)
+            #expect(decoded.workoutRecoveryDurationMinutes == 120)
         }
     }
 }
