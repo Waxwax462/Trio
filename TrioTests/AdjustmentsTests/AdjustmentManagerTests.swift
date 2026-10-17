@@ -173,64 +173,6 @@ import Testing
         #expect(rows.first(where: { $0.name == "Tempbasal" })?.enabled == false)
     }
 
-    @Test("Workout recovery starts one Override and cancels active adjustments") func testWorkoutRecoveryOverride() async throws {
-        let recoveryName = String(localized: "Workout Recovery")
-        await makeOverride(name: "Manual Override", enabled: true, date: Date().addingTimeInterval(-30 * 60))
-        await makeTempTarget(
-            name: "Manual Temp Target",
-            enabled: true,
-            date: Date().addingTimeInterval(-20 * 60),
-            duration: 90,
-            target: 140
-        )
-
-        let outcome = try await manager.activateWorkoutRecoveryOverride(
-            percentage: 80,
-            durationMinutes: 120,
-            source: .healthKit
-        )
-
-        #expect(outcome.started?.name == recoveryName)
-        #expect(outcome.ended.map(\.name) == ["Manual Override", "Manual Temp Target"])
-
-        let overrideRows = try await overrides()
-        let recovery = try #require(overrideRows.first(where: { $0.name == recoveryName }))
-        #expect(recovery.enabled)
-        #expect(recovery.percentage == 80)
-        #expect(recovery.duration == 120)
-        #expect(recovery.isPreset == false)
-        #expect(overrideRows.first(where: { $0.name == "Manual Override" })?.enabled == false)
-
-        let targetRows = try await tempTargets()
-        #expect(targetRows.first(where: { $0.name == "Manual Temp Target" })?.enabled == false)
-        let overrideRunEntries = try await overrideRuns()
-        let tempTargetRunEntries = try await tempTargetRuns()
-        #expect(overrideRunEntries.count == 1)
-        #expect(tempTargetRunEntries.count == 1)
-    }
-
-    @Test("Invalid workout recovery settings leave adjustments untouched") func testInvalidWorkoutRecoverySettings() async throws {
-        await makeOverride(name: "Manual Override", enabled: true, date: Date())
-        await makeTempTarget(name: "Manual Temp Target", enabled: true, date: Date(), duration: 60, target: 140)
-
-        await #expect(throws: AdjustmentError.invalidWorkoutRecoveryConfiguration) {
-            try await manager.activateWorkoutRecoveryOverride(
-                percentage: 100,
-                durationMinutes: 60,
-                source: .healthKit
-            )
-        }
-
-        let overrideRows = try await overrides()
-        let targetRows = try await tempTargets()
-        let overrideRunEntries = try await overrideRuns()
-        let tempTargetRunEntries = try await tempTargetRuns()
-        #expect(overrideRows.first(where: { $0.name == "Manual Override" })?.enabled == true)
-        #expect(targetRows.first(where: { $0.name == "Manual Temp Target" })?.enabled == true)
-        #expect(overrideRunEntries.isEmpty)
-        #expect(tempTargetRunEntries.isEmpty)
-    }
-
     // MARK: - Temp targets
 
     @Test("Switching temp targets records the one that ends") func testSwitchTempTargetRecordsRun() async throws {
@@ -352,9 +294,6 @@ import Testing
         let enabled: Bool
         let date: Date?
         let isUploadedToNS: Bool
-        let percentage: Double?
-        let duration: Decimal?
-        let isPreset: Bool?
     }
 
     private struct RunSnapshot {
@@ -371,15 +310,7 @@ import Testing
         try await testContext.perform {
             let request: NSFetchRequest<OverrideStored> = OverrideStored.fetchRequest()
             return try self.testContext.fetch(request).map {
-                RowSnapshot(
-                    name: $0.name,
-                    enabled: $0.enabled,
-                    date: $0.date,
-                    isUploadedToNS: $0.isUploadedToNS,
-                    percentage: $0.percentage,
-                    duration: $0.duration?.decimalValue,
-                    isPreset: $0.isPreset
-                )
+                RowSnapshot(name: $0.name, enabled: $0.enabled, date: $0.date, isUploadedToNS: $0.isUploadedToNS)
             }
         }
     }
@@ -388,15 +319,7 @@ import Testing
         try await testContext.perform {
             let request: NSFetchRequest<TempTargetStored> = TempTargetStored.fetchRequest()
             return try self.testContext.fetch(request).map {
-                RowSnapshot(
-                    name: $0.name,
-                    enabled: $0.enabled,
-                    date: $0.date,
-                    isUploadedToNS: $0.isUploadedToNS,
-                    percentage: nil,
-                    duration: $0.duration?.decimalValue,
-                    isPreset: $0.isPreset
-                )
+                RowSnapshot(name: $0.name, enabled: $0.enabled, date: $0.date, isUploadedToNS: $0.isUploadedToNS)
             }
         }
     }

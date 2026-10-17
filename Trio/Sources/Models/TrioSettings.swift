@@ -38,9 +38,6 @@ struct TrioSettings: JSON, Equatable, Encodable {
     var minuteInterval: Decimal = 30
     var delay: Decimal = 60
     var useAppleHealth: Bool = false
-    var workoutRecoveryAutomationEnabled: Bool = false
-    var workoutRecoveryBasalPercentage: Int = 80
-    var workoutRecoveryDurationMinutes: Int = 120
     var smoothGlucose: Bool = false
     var eA1cDisplayUnit: EstimatedA1cDisplayUnit = .percent
     var high: Decimal = 180
@@ -195,31 +192,6 @@ extension TrioSettings: Decodable {
 
         if let useAppleHealth = try? container.decode(Bool.self, forKey: .useAppleHealth) {
             settings.useAppleHealth = useAppleHealth
-        }
-
-        if let workoutRecoveryAutomationEnabled = try? container.decode(
-            Bool.self,
-            forKey: .workoutRecoveryAutomationEnabled
-        ) {
-            settings.workoutRecoveryAutomationEnabled = workoutRecoveryAutomationEnabled
-        }
-
-        if let workoutRecoveryBasalPercentage = try? container.decode(
-            Int.self,
-            forKey: .workoutRecoveryBasalPercentage
-        ), (40...100).contains(workoutRecoveryBasalPercentage), workoutRecoveryBasalPercentage.isMultiple(of: 5) {
-            settings.workoutRecoveryBasalPercentage = workoutRecoveryBasalPercentage
-        } else if container.contains(.workoutRecoveryBasalPercentage) {
-            settings.workoutRecoveryAutomationEnabled = false
-        }
-
-        if let workoutRecoveryDurationMinutes = try? container.decode(
-            Int.self,
-            forKey: .workoutRecoveryDurationMinutes
-        ), (15...1440).contains(workoutRecoveryDurationMinutes) {
-            settings.workoutRecoveryDurationMinutes = workoutRecoveryDurationMinutes
-        } else if container.contains(.workoutRecoveryDurationMinutes) {
-            settings.workoutRecoveryAutomationEnabled = false
         }
 
         if let glucoseBadge = try? container.decode(Bool.self, forKey: .glucoseBadge) {

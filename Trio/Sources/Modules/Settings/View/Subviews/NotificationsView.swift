@@ -22,11 +22,12 @@ struct NotificationsView: BaseView {
         VStack(alignment: .leading, spacing: 10) {
             Text("Notifications give you important Trio information without requiring you to open the app.")
             Text(
-                "Keep these turned ON in your phone’s settings to ensure you receive Trio Notifications, Critical Alerts, and Time Sensitive Notifications."
+                "Keep notifications and Time Sensitive Notifications turned on in iOS Settings. In Settings > Focus > Sleep, allow Trio and enable Time Sensitive Notifications. For an alarm that must override Focus, enable Override Silence & Focus Mode for that alarm."
             )
         }
     )
     @State var hintLabel: String? = String(localized: "Manage iOS Preferences")
+    @State var timeSensitiveNotificationsDisabled = false
 
     @Environment(\.colorScheme) var colorScheme
     @Environment(AppState.self) var appState
@@ -56,6 +57,7 @@ struct NotificationsView: BaseView {
                 header: Text("Manage iOS Preferences"),
                 content: {
                     notificationsEnabledStatus
+                    timeSensitiveNotificationsStatus
 
                     manageNotifications
                 }
@@ -97,6 +99,10 @@ struct NotificationsView: BaseView {
                     }
                 }
             }
+        )
+        .onReceive(
+            resolver.resolve(AlertPermissionsChecker.self)!.$timeSensitiveNotificationsDisabled,
+            perform: { timeSensitiveNotificationsDisabled = $0 }
         )
         .alert(
             isPresented: self.$showAlert,
@@ -159,6 +165,14 @@ extension NotificationsView {
             Text(String(localized: "Notifications", comment: "Notifications Status text"))
             Spacer()
             onOff(!notificationsDisabled)
+        }
+    }
+
+    private var timeSensitiveNotificationsStatus: some View {
+        HStack {
+            Text("Time Sensitive Notifications")
+            Spacer()
+            onOff(!timeSensitiveNotificationsDisabled)
         }
     }
 }

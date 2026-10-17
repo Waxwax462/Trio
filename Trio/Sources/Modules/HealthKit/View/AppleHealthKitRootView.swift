@@ -63,37 +63,6 @@ extension AppleHealthKit {
                         .foregroundColor(Color.secondary)
                     }.listRowBackground(Color.chart)
                 }
-
-                Section(
-                    header: Text("Workout Recovery"),
-                    footer: Text(
-                        "When a completed workout of any activity type is saved to Apple Health, Trio can apply a temporary basal-rate reduction for the selected duration. This replaces active Overrides and Temp Targets. Initial values are 80% for 120 minutes; they are examples, not a therapy recommendation. Only enable automation if the settings match your personal treatment plan. At 100%, no recovery Override is applied. Health access can be managed in Settings > Health > Data Access & Devices."
-                    )
-                ) {
-                    Toggle(
-                        "Apply Recovery Override After Workouts",
-                        isOn: $state.workoutRecoveryAutomationEnabled
-                    ).disabled(state.isUpdatingWorkoutRecoveryAutomation)
-
-                    if let error = state.workoutRecoveryAutomationError {
-                        Text(error).foregroundStyle(.red)
-                    }
-
-                    Picker("Basal Rate During Recovery", selection: $state.workoutRecoveryBasalPercentage) {
-                        ForEach(Array(stride(from: 40, through: 100, by: 5)), id: \.self) { percentage in
-                            Text("\(percentage)%").tag(percentage)
-                        }
-                    }
-
-                    Stepper(value: $state.workoutRecoveryDurationMinutes, in: 15...1440, step: 15) {
-                        HStack {
-                            Text("Recovery Duration")
-                            Spacer()
-                            Text("\(state.workoutRecoveryDurationMinutes) min")
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }.listRowBackground(Color.chart)
             }
             .listSectionSpacing(sectionSpacing)
             .sheet(isPresented: $shouldDisplayHint) {

@@ -9,6 +9,7 @@ public class AlertPermissionsChecker: ObservableObject, Injectable {
     private var listeningToNotificationCenter = false
 
     @Published var notificationsDisabled: Bool = false
+    @Published var timeSensitiveNotificationsDisabled: Bool = false
 
     init(resolver: Resolver) {
         injectServices(resolver)
@@ -18,6 +19,8 @@ public class AlertPermissionsChecker: ObservableObject, Injectable {
                 self?.check()
             }
             .store(in: &cancellables)
+
+        checkNow()
 
         Foundation.NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)
             .sink { [weak self] _ in
@@ -38,6 +41,7 @@ public class AlertPermissionsChecker: ObservableObject, Injectable {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             DispatchQueue.main.async {
                 self.notificationsDisabled = settings.alertSetting == .disabled
+                self.timeSensitiveNotificationsDisabled = settings.timeSensitiveSetting != .enabled
                 completion?()
             }
         }
