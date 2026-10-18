@@ -20,6 +20,7 @@ protocol TrioAlertManager: AnyObject {
     func handleAcknowledgement(identifier: Alert.Identifier)
     func handleNotificationResponse(_ response: UNNotificationResponse)
     func acknowledgeAllOutstanding()
+    @MainActor func scheduleTestAlarm() async throws
     /// Canonical snooze entry point used by every snooze surface:
     /// Snooze module, phone UN action, watch UN action, in-app banner.
     /// Persists snoozeUntilDate, mutes AlertMuter, clears any pending
@@ -692,6 +693,14 @@ extension BaseTrioAlertManager: TrioModalAlertResponder, TrioUserNotificationAle
             muted: muter.shouldMute(at: Date()),
             useAlarmKit: alert.interruptionLevel == .critical
         )
+    }
+
+    @MainActor func scheduleTestAlarm() async throws {
+        if alarmScheduler == nil { alarmScheduler = CriticalAlertAlarmScheduler() }
+        guard let alarmScheduler else {
+            throw CriticalAlertAlarmSchedulerError.unavailable
+        }
+        try await alarmScheduler.scheduleTestAlarm()
     }
 
     func isAlertActive(identifier: Alert.Identifier) -> Bool {

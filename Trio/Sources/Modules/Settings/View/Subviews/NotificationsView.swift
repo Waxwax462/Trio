@@ -29,6 +29,8 @@ struct NotificationsView: BaseView {
     @State var hintLabel: String? = String(localized: "Manage iOS Preferences")
     @State var timeSensitiveNotificationsDisabled = false
     @State private var alarmKitAuthorized = false
+    @State private var isStartingTestAlarm = false
+    @State private var testAlarmMessage: String?
 
     @Environment(\.colorScheme) var colorScheme
     @Environment(AppState.self) var appState
@@ -66,6 +68,10 @@ struct NotificationsView: BaseView {
                     manageNotifications
                 }
             ).listRowBackground(Color.chart)
+
+            if #available(iOS 26, *) {
+                testAlarmSection.listRowBackground(Color.chart)
+            }
 
             Section(
                 header: Text("Notification Center"),
@@ -190,6 +196,49 @@ extension NotificationsView {
             Text("AlarmKit (iOS 26)")
             Spacer()
             onOff(alarmKitAuthorized)
+        }
+    }
+
+    private var testAlarmSection: some View {
+        Section(
+            header: Text("Test Alarm"),
+            content: {
+                Button(action: startTestAlarm) {
+                    HStack {
+                        Image(systemName: "bell.badge").foregroundStyle(.tint)
+                        Text(isStartingTestAlarm ? "Starting Test Alarm…" : "Start Test Alarm").bold()
+                        Spacer()
+                        if isStartingTestAlarm {
+                            ProgressView()
+                        }
+                    }
+                }
+                .disabled(isStartingTestAlarm)
+
+                Text(
+                    testAlarmMessage
+                        ?? "Tests the AlarmKit night-alarm path with your configured night sound. Stop it on the alarm screen."
+                )
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+            }
+        )
+    }
+
+    private func startTestAlarm() {
+        guard !isStartingTestAlarm else { return }
+        isStartingTestAlarm = true
+        testAlarmMessage = nil
+        Task { @MainActor in
+            defer { isStartingTestAlarm = false }
+            do {
+                try await resolver.resolve(TrioAlertManager.self)!.scheduleTestAlarm()
+                testAlarmMessage = String(
+                    localized: "Test alarm scheduled. It should ring in a few seconds; stop it on the alarm screen."
+                )
+            } catch {
+                testAlarmMessage = error.localizedDescription
+            }
         }
     }
 

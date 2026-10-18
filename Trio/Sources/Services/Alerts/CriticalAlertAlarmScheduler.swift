@@ -9,6 +9,20 @@ import os.log
     import struct SwiftUI.Color // Color only; `import SwiftUI` makes `Alert` ambiguous with LoopKit.Alert
 #endif
 
+enum CriticalAlertAlarmSchedulerError: LocalizedError {
+    case unavailable
+    case authorizationRequired
+
+    var errorDescription: String? {
+        switch self {
+        case .unavailable:
+            return String(localized: "AlarmKit test alarms require iOS 26 or later.")
+        case .authorizationRequired:
+            return String(localized: "Allow Alarms for Trio in iOS Settings, then try the test again.")
+        }
+    }
+}
+
 /// On iOS 26+ this schedules an AlarmKit alarm for critical alerts and
 /// audible nighttime alarms. AlarmKit breaks through the silent switch,
 /// Focus and Do Not Disturb with a system-rendered alarm, and — unlike the
@@ -26,6 +40,7 @@ final class CriticalAlertAlarmScheduler {
     /// Maps an issued alert to the AlarmKit alarm scheduled for it, so the
     /// alarm can be cancelled when the alert is acknowledged or retracted.
     private var alarmsByAlert: [Alert.Identifier: UUID] = [:]
+    private var activeTestAlarmIdentifier: Alert.Identifier?
 
     /// True only if AlarmKit is available (iOS 26+) AND the user authorized it.
     /// When false, callers may use the `CriticalAlertAudioPlayer` fallback.
@@ -73,32 +88,7 @@ final class CriticalAlertAlarmScheduler {
         guard #available(iOS 26, *), isAuthorizedAndAvailable else { return false }
         #if canImport(AlarmKit)
             cancelAlarm(for: alert.identifier)
-
-            let stopButton = AlarmButton(
-                text: LocalizedStringResource(stringLiteral: String(localized: "Stop")),
-                textColor: .white,
-                systemImageName: "stop.circle"
-            )
-            let presentation = AlarmPresentation(
-                alert: AlarmPresentation.Alert(
-                    title: LocalizedStringResource(stringLiteral: alert.backgroundContent.title),
-                    stopButton: stopButton
-                )
-            )
-            let attributes = AlarmAttributes<EmptyAlarmMetadata>(presentation: presentation, tintColor: .red)
-
-            // Alert-only (no countdownDuration) so no Widget Extension / Live
-            // Activity is required. `AlertSound.named` resolves the same way
-            // `UNNotificationSoundName` does — main bundle root or
-            // Library/Sounds — which is where Trio's tones now live.
-            let sound: AlertConfiguration.AlertSound = alert.sound?.filename
-                .map { .named($0) } ?? .default
-            let configuration = AlarmManager.AlarmConfiguration<EmptyAlarmMetadata>.alarm(
-                schedule: .fixed(Date().addingTimeInterval(Self.immediateFireDelay)),
-                attributes: attributes,
-                stopIntent: StopCriticalAlertIntent(identifier: alert.identifier),
-                sound: sound
-            )
+            let configuration = alarmConfiguration(for: alert)
 
             let id = UUID()
             alarmsByAlert[alert.identifier] = id
@@ -126,11 +116,101 @@ final class CriticalAlertAlarmScheduler {
         #endif
     }
 
+    func scheduleTestAlarm() async throws {
+        guard #available(iOS 26, *) else {
+            throw CriticalAlertAlarmSchedulerError.unavailable
+        }
+        #if canImport(AlarmKit)
+            guard isAuthorizedAndAvailable else {
+                throw CriticalAlertAlarmSchedulerError.authorizationRequired
+            }
+
+            let identifier = Alert.Identifier(
+                managerIdentifier: "Trio",
+                alertIdentifier: "test-alarm-\(UUID().uuidString)"
+            )
+            let content = Alert.Content(
+                title: String(localized: "Trio Test Alarm"),
+                body: String(localized: "This is a test alarm, not a glucose alert."),
+                acknowledgeActionButtonLabel: String(localized: "Stop")
+            )
+            let configuredNightSound = GlucoseAlertsStore.shared.alerts.first { alert in
+                guard alert.shouldEvaluate, alert.playsSound, !alert.soundFilename.isEmpty else { return false }
+                return alert.activeOption == .always || alert.activeOption == .night
+            }?.soundFilename ?? "critical.caf"
+            let alert = Alert(
+                identifier: identifier,
+                foregroundContent: content,
+                backgroundContent: content,
+                trigger: .immediate,
+                interruptionLevel: .timeSensitive,
+                sound: .sound(name: configuredNightSound)
+            )
+            let id = UUID()
+            if let activeTestAlarmIdentifier {
+                cancelAlarm(for: activeTestAlarmIdentifier)
+            }
+            do {
+                _ = try await AlarmManager.shared.schedule(
+                    id: id,
+                    configuration: alarmConfiguration(for: alert)
+                )
+                alarmsByAlert[identifier] = id
+                activeTestAlarmIdentifier = identifier
+                os_log(
+                    "Scheduled AlarmKit test alarm %{public}@",
+                    log: log,
+                    type: .info,
+                    id.uuidString
+                )
+            } catch {
+                os_log(
+                    "Failed to schedule AlarmKit test alarm: %{public}@",
+                    log: log,
+                    type: .error,
+                    String(describing: error)
+                )
+                throw error
+            }
+        #else
+            throw CriticalAlertAlarmSchedulerError.unavailable
+        #endif
+    }
+
+    #if canImport(AlarmKit)
+        @available(iOS 26, *)
+        private func alarmConfiguration(for alert: Alert) -> AlarmManager.AlarmConfiguration<EmptyAlarmMetadata> {
+            let stopButton = AlarmButton(
+                text: LocalizedStringResource(stringLiteral: String(localized: "Stop")),
+                textColor: .white,
+                systemImageName: "stop.circle"
+            )
+            let presentation = AlarmPresentation(
+                alert: AlarmPresentation.Alert(
+                    title: LocalizedStringResource(stringLiteral: alert.backgroundContent.title),
+                    stopButton: stopButton
+                )
+            )
+            let attributes = AlarmAttributes<EmptyAlarmMetadata>(presentation: presentation, tintColor: .red)
+            let sound: AlertConfiguration.AlertSound = alert.sound?.filename
+                .map { .named($0) } ?? .default
+            return AlarmManager.AlarmConfiguration<EmptyAlarmMetadata>.alarm(
+                schedule: .fixed(Date().addingTimeInterval(Self.immediateFireDelay)),
+                attributes: attributes,
+                stopIntent: StopCriticalAlertIntent(identifier: alert.identifier),
+                sound: sound
+            )
+        }
+    #endif
+
     /// Cancel/stop the AlarmKit alarm scheduled for the given alert, if any.
     func cancelAlarm(for identifier: Alert.Identifier) {
         guard #available(iOS 26, *) else { return }
         #if canImport(AlarmKit)
             guard let id = alarmsByAlert.removeValue(forKey: identifier) else { return }
+            if activeTestAlarmIdentifier == identifier {
+                activeTestAlarmIdentifier = nil
+            }
             // The alarm may be ringing or merely scheduled; try both and ignore errors.
             try? AlarmManager.shared.stop(id: id)
             try? AlarmManager.shared.cancel(id: id)
