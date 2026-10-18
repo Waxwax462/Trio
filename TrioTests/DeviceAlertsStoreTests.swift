@@ -334,6 +334,31 @@ import Testing
 
     // MARK: - Override Silence & Focus
 
+    @Test("Audible nighttime alerts use AlarmKit without changing notification priority")
+    func nighttimeAudibleAlertsUseAlarmKit() {
+        let content = Alert.Content(title: "t", body: "b", acknowledgeActionButtonLabel: "OK")
+        let nightAlarm = Alert(
+            identifier: Self.reservoirLow,
+            foregroundContent: content,
+            backgroundContent: content,
+            trigger: .immediate,
+            interruptionLevel: .timeSensitive,
+            sound: .sound(name: "synth.caf")
+        )
+        let silentAlarm = Alert(
+            identifier: Self.reservoirLow,
+            foregroundContent: content,
+            backgroundContent: content,
+            trigger: .immediate,
+            interruptionLevel: .timeSensitive
+        )
+
+        #expect(BaseTrioAlertManager.shouldUseAlarmKit(for: nightAlarm, isNight: true))
+        #expect(!BaseTrioAlertManager.shouldUseAlarmKit(for: nightAlarm, isNight: false))
+        #expect(!BaseTrioAlertManager.shouldUseAlarmKit(for: silentAlarm, isNight: true))
+        #expect(nightAlarm.interruptionLevel == .timeSensitive)
+    }
+
     @Test("Override Silence & Focus escalates to .critical") func overrideEscalates() throws {
         let entry = try #require(AlertCatalogRegistry.lookup(Self.reservoirLow))
         #expect(entry.interruptionLevel == .timeSensitive, "Precondition: catalog level")

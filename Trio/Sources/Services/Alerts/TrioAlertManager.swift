@@ -170,16 +170,16 @@ final class BaseTrioAlertManager: TrioAlertManager, Injectable {
         }
     }
 
-    /// Falls back to in-process AVAudioPlayer for `.critical` alerts on
-    /// builds without the Critical Alerts entitlement. iOS silently
+    /// Uses AlarmKit or in-process AVAudioPlayer for audible alarms that need
+    /// to sound through Focus. iOS silently
     /// downgrades `.criticalSoundNamed` and `.defaultCritical` to a regular
     /// notification without the entitlement, which DnD / silent switch /
-    /// Focus modes then mute — dangerous for an overnight urgent-low.
-    /// `.playback` audio session bypasses those.
+    /// Focus modes then mute. `.playback` audio session is the best-effort
+    /// fallback when AlarmKit cannot be used.
     ///
-    /// Only fires for immediate-trigger alerts; delayed/repeating go
-    /// through UNNotification at fire time. No-op when muted or non-critical.
-    private func playCriticalAudioFallbackIfNeeded(_ alert: Alert, muted: Bool) {
+    /// Immediate audible alarms are routed here; delayed/repeating
+    /// notifications retain their scheduled UNNotification sound.
+    private func playAlarmAudioIfNeeded(_ alert: Alert, muted: Bool, useAlarmKit: Bool) {
         guard !muted else { return }
         if case .vibrate? = alert.sound {
             Task { @MainActor in
@@ -187,7 +187,7 @@ final class BaseTrioAlertManager: TrioAlertManager, Injectable {
             }
             return
         }
-        guard alert.interruptionLevel == .critical else { return }
+        guard useAlarmKit else { return }
         // Honor `playsSound: false` (alert was issued with sound: nil) —
         // user explicitly opted out of audio on this alarm.
         guard let soundName = alert.sound?.filename else { return }
@@ -360,13 +360,18 @@ final class BaseTrioAlertManager: TrioAlertManager, Injectable {
     private func deliver(_ effective: Alert) {
         let now = Date()
         let muted = muter.shouldMute(at: now)
+        let isNight = GlucoseAlertsStore.shared.configuration.isNight(at: now)
+        let isImmediate: Bool
+        if case .immediate = effective.trigger {
+            isImmediate = true
+        } else {
+            isImmediate = false
+        }
+        let useAlarmKit = isImmediate && Self.shouldUseAlarmKit(for: effective, isNight: isNight)
         modalScheduler.schedule(effective)
-        // AlarmKit sounds critical alerts itself; posting the notification with
-        // a sound too would play the tone twice, at once.
-        let alarmKitWillSound = alarmKitAvailable
-            && effective.interruptionLevel == .critical
-            && effective.sound?.filename != nil
-            && !muted
+        // AlarmKit handles audible nighttime and critical alerts. Posting a
+        // second sound with the notification would overlap the system alarm.
+        let alarmKitWillSound = alarmKitAvailable && useAlarmKit && !muted
         userNotificationScheduler.schedule(
             effective,
             muted: muted,
@@ -375,9 +380,17 @@ final class BaseTrioAlertManager: TrioAlertManager, Injectable {
         )
         // `.delayed`/`.repeating` alerts start their audio when the timer
         // fires (`alertDidFire`), not now — this is only their arm time.
-        if case .immediate = effective.trigger {
-            playCriticalAudioFallbackIfNeeded(effective, muted: muted)
+        if isImmediate {
+            playAlarmAudioIfNeeded(effective, muted: muted, useAlarmKit: useAlarmKit)
         }
+    }
+
+    /// Audible nighttime alarms use AlarmKit without changing their
+    /// notification priority or snooze behavior. Critical alarms retain the
+    /// same channel at any time of day.
+    static func shouldUseAlarmKit(for alert: Alert, isNight: Bool) -> Bool {
+        guard alert.sound?.filename != nil else { return false }
+        return isNight || alert.interruptionLevel == .critical
     }
 
     /// Overlays the user's Device Alarms tier config onto a catalog-known
@@ -674,7 +687,11 @@ extension BaseTrioAlertManager: TrioModalAlertResponder, TrioUserNotificationAle
     }
 
     func alertDidFire(_ alert: Alert) {
-        playCriticalAudioFallbackIfNeeded(alert, muted: muter.shouldMute(at: Date()))
+        playAlarmAudioIfNeeded(
+            alert,
+            muted: muter.shouldMute(at: Date()),
+            useAlarmKit: alert.interruptionLevel == .critical
+        )
     }
 
     func isAlertActive(identifier: Alert.Identifier) -> Bool {

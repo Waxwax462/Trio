@@ -9,15 +9,14 @@ import os.log
     import struct SwiftUI.Color // Color only; `import SwiftUI` makes `Alert` ambiguous with LoopKit.Alert
 #endif
 
-/// On iOS 26+ this schedules an AlarmKit alarm as the audible critical-alert
-/// channel instead of the AVAudioSession + volume-booster + vibration hack in
-/// `CriticalAlertAudioPlayer`. AlarmKit breaks through the silent switch,
+/// On iOS 26+ this schedules an AlarmKit alarm for critical alerts and
+/// audible nighttime alarms. AlarmKit breaks through the silent switch,
 /// Focus and Do Not Disturb with a system-rendered alarm, and — unlike the
 /// in-process player — still fires when iOS has suspended Trio.
 ///
 /// Requires the user to grant AlarmKit authorization. When AlarmKit is
 /// unavailable (iOS < 26) or unauthorized, callers fall back to
-/// `CriticalAlertAudioPlayer`.
+/// `CriticalAlertAudioPlayer` where the app is running.
 ///
 /// Ported from Loop's `CriticalAlertAlarmScheduler`.
 @MainActor
@@ -29,8 +28,12 @@ final class CriticalAlertAlarmScheduler {
     private var alarmsByAlert: [Alert.Identifier: UUID] = [:]
 
     /// True only if AlarmKit is available (iOS 26+) AND the user authorized it.
-    /// When false, callers should use the `CriticalAlertAudioPlayer` fallback.
+    /// When false, callers may use the `CriticalAlertAudioPlayer` fallback.
     var isAuthorizedAndAvailable: Bool {
+        Self.systemAlarmAuthorizationGranted
+    }
+
+    @MainActor static var systemAlarmAuthorizationGranted: Bool {
         guard #available(iOS 26, *) else { return false }
         #if canImport(AlarmKit)
             return AlarmManager.shared.authorizationState == .authorized

@@ -22,12 +22,13 @@ struct NotificationsView: BaseView {
         VStack(alignment: .leading, spacing: 10) {
             Text("Notifications give you important Trio information without requiring you to open the app.")
             Text(
-                "Keep notifications and Time Sensitive Notifications turned on in iOS Settings. In Settings > Focus > Sleep, allow Trio and enable Time Sensitive Notifications. For an alarm that must override Focus, enable Override Silence & Focus Mode for that alarm."
+                "Keep notifications and Time Sensitive Notifications turned on in iOS Settings. On iOS 26, allow Alarms for Trio when prompted; audible nighttime alarms use AlarmKit to sound through Sleep Focus. On earlier iOS versions, Focus behavior depends on the alarm’s Override Silence & Focus Mode setting and your notification settings."
             )
         }
     )
     @State var hintLabel: String? = String(localized: "Manage iOS Preferences")
     @State var timeSensitiveNotificationsDisabled = false
+    @State private var alarmKitAuthorized = false
 
     @Environment(\.colorScheme) var colorScheme
     @Environment(AppState.self) var appState
@@ -58,6 +59,9 @@ struct NotificationsView: BaseView {
                 content: {
                     notificationsEnabledStatus
                     timeSensitiveNotificationsStatus
+                    if #available(iOS 26, *) {
+                        alarmKitAuthorizationStatus
+                    }
 
                     manageNotifications
                 }
@@ -89,6 +93,11 @@ struct NotificationsView: BaseView {
             ).listRowBackground(Color.chart)
         }
         .listSectionSpacing(sectionSpacing)
+        .onAppear(perform: refreshAlarmKitAuthorization)
+        .onReceive(
+            Foundation.NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification),
+            perform: { _ in refreshAlarmKitAuthorization() }
+        )
         .onReceive(
             resolver.resolve(AlertPermissionsChecker.self)!.$notificationsDisabled,
             perform: {
@@ -173,6 +182,21 @@ extension NotificationsView {
             Text("Time Sensitive Notifications")
             Spacer()
             onOff(!timeSensitiveNotificationsDisabled)
+        }
+    }
+
+    @ViewBuilder private var alarmKitAuthorizationStatus: some View {
+        HStack {
+            Text("AlarmKit (iOS 26)")
+            Spacer()
+            onOff(alarmKitAuthorized)
+        }
+    }
+
+    private func refreshAlarmKitAuthorization() {
+        guard #available(iOS 26, *) else { return }
+        Task { @MainActor in
+            alarmKitAuthorized = CriticalAlertAlarmScheduler.systemAlarmAuthorizationGranted
         }
     }
 }
