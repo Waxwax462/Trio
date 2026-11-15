@@ -16,6 +16,7 @@ enum AdjustmentSource: String {
     case remote
     case shortcut
     case watch
+    case sportProfile
 }
 
 struct AdjustmentSummary: Equatable {

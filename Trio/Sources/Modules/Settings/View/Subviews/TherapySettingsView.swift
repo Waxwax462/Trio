@@ -36,6 +36,15 @@ struct TherapySettingsView: BaseView {
                 }
             )
             .listRowBackground(Color.chart)
+
+            Section(
+                header: Text("Profiles & Checks"),
+                content: {
+                    Text("Therapy Profiles").navigationLink(to: .therapyProfiles, from: self)
+                    Text("Basal Rate Check").navigationLink(to: .settingsTests, from: self)
+                }
+            )
+            .listRowBackground(Color.chart)
         }
         .scrollContentBackground(.hidden)
         .background(appState.trioBackgroundColor(for: colorScheme))
