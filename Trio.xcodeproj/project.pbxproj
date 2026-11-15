@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A7B71ED1D80AF36A52980129 /* TherapyProfileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69C0B5354A126DF73830239C /* TherapyProfileTests.swift */; };
+		E1115DF113F5B5D726BDB335 /* TherapyProfilesRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDAC820AADDEBF489F81CD2D /* TherapyProfilesRootView.swift */; };
+		AE0C3D523B919B38F04676DA /* TherapyProfilesStateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0EE037982F8099638519121 /* TherapyProfilesStateModel.swift */; };
+		60947F38B229AD905FDE4C10 /* TherapyProfilesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52D6F5F94615E9ACA261A49 /* TherapyProfilesProvider.swift */; };
+		7CF55FAAAAEEAAC183F38176 /* TherapyProfilesDataFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BB516E6951E8DFC984B269 /* TherapyProfilesDataFlow.swift */; };
+		74F2ECBCB6D7A676DAE1369B /* TherapyProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1113B2C2AC5CFFAF46DD310 /* TherapyProfileManager.swift */; };
+		916874E1ADE5A50B2BAEF73D /* TherapyProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF4D221D6235230281C3A90D /* TherapyProfile.swift */; };
 		041D1E995A6AE92E9289DC49 /* TreatmentsDataFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D1A7CA8C10C4403D4BBFA7 /* TreatmentsDataFlow.swift */; };
 		0D9A5E34A899219C5C4CDFAF /* HistoryStateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9455FA2D92E77A6C4AFED8A3 /* HistoryStateModel.swift */; };
 		110AEDE32C5193D200615CC9 /* BolusIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 110AEDE02C5193D100615CC9 /* BolusIntent.swift */; };
@@ -1106,6 +1113,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		69C0B5354A126DF73830239C /* TherapyProfileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TherapyProfileTests.swift; sourceTree = "<group>"; };
+		BDAC820AADDEBF489F81CD2D /* TherapyProfilesRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TherapyProfilesRootView.swift; sourceTree = "<group>"; };
+		A0EE037982F8099638519121 /* TherapyProfilesStateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TherapyProfilesStateModel.swift; sourceTree = "<group>"; };
+		A52D6F5F94615E9ACA261A49 /* TherapyProfilesProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TherapyProfilesProvider.swift; sourceTree = "<group>"; };
+		61BB516E6951E8DFC984B269 /* TherapyProfilesDataFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TherapyProfilesDataFlow.swift; sourceTree = "<group>"; };
+		A1113B2C2AC5CFFAF46DD310 /* TherapyProfileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TherapyProfileManager.swift; sourceTree = "<group>"; };
+		EF4D221D6235230281C3A90D /* TherapyProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TherapyProfile.swift; sourceTree = "<group>"; };
 		10E61A0885164081B57C357C /* NightscoutUploadSerializer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NightscoutUploadSerializer.swift; sourceTree = "<group>"; };
 		110AEDE02C5193D100615CC9 /* BolusIntent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BolusIntent.swift; sourceTree = "<group>"; };
 		110AEDE12C5193D100615CC9 /* BolusIntentRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BolusIntentRequest.swift; sourceTree = "<group>"; };
@@ -2173,6 +2187,34 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		55FA5F72E508AE2AE134AA69 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				BDAC820AADDEBF489F81CD2D /* TherapyProfilesRootView.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		68DCF0A8A6ECA571E7428FF5 /* TherapyProfiles */ = {
+			isa = PBXGroup;
+			children = (
+				55FA5F72E508AE2AE134AA69 /* View */,
+				A0EE037982F8099638519121 /* TherapyProfilesStateModel.swift */,
+				A52D6F5F94615E9ACA261A49 /* TherapyProfilesProvider.swift */,
+				61BB516E6951E8DFC984B269 /* TherapyProfilesDataFlow.swift */,
+			);
+			path = TherapyProfiles;
+			sourceTree = "<group>";
+		};
+		818454033B6A7E23E8F8CBA4 /* TherapyProfiles */ = {
+			isa = PBXGroup;
+			children = (
+				A1113B2C2AC5CFFAF46DD310 /* TherapyProfileManager.swift */,
+				EF4D221D6235230281C3A90D /* TherapyProfile.swift */,
+			);
+			path = TherapyProfiles;
+			sourceTree = "<group>";
+		};
 		0610F7D6D2EC00E3BA1569F0 /* ConfigEditor */ = {
 			isa = PBXGroup;
 			children = (
@@ -2411,6 +2453,7 @@
 		3811DE0325C9D31700A708ED /* Modules */ = {
 			isa = PBXGroup;
 			children = (
+				68DCF0A8A6ECA571E7428FF5 /* TherapyProfiles */,
 				DDD163032C4C67B400CD525A /* Adjustments */,
 				DD1745382C55BF8B00211FAC /* AlgorithmAdvancedSettings */,
 				DDF690FE2DA2C9EE008BF16C /* AppDiagnostics */,
@@ -2577,6 +2620,7 @@
 		3811DE9125C9D88200A708ED /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				818454033B6A7E23E8F8CBA4 /* TherapyProfiles */,
 				B015AFF22E600000000D7351 /* Adjustments */,
 				BD1179262F4E22C100F90001 /* Alerts */,
 				3811DE9225C9D88200A708ED /* Appearance */,
@@ -3191,6 +3235,7 @@
 		38FCF3EE25E9028E0078B0D1 /* TrioTests */ = {
 			isa = PBXGroup;
 			children = (
+				69C0B5354A126DF73830239C /* TherapyProfileTests.swift */,
 				DDDD0FFD2F4E231600F9C645 /* Mocks */,
 				DDDD0FFA2F4E22C000F9C645 /* GlucoseSmoothingTests.swift */,
 				DDDD0FFC2F4E22C000F9C645 /* GlucoseNativeConversionTests.swift */,
@@ -5210,6 +5255,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E1115DF113F5B5D726BDB335 /* TherapyProfilesRootView.swift in Sources */,
+				AE0C3D523B919B38F04676DA /* TherapyProfilesStateModel.swift in Sources */,
+				60947F38B229AD905FDE4C10 /* TherapyProfilesProvider.swift in Sources */,
+				7CF55FAAAAEEAAC183F38176 /* TherapyProfilesDataFlow.swift in Sources */,
+				74F2ECBCB6D7A676DAE1369B /* TherapyProfileManager.swift in Sources */,
+				916874E1ADE5A50B2BAEF73D /* TherapyProfile.swift in Sources */,
 				DD5DC9F12CF3D97C00AB8703 /* AdjustmentsStateModel+Overrides.swift in Sources */,
 				3811DE2325C9D48300A708ED /* MainDataFlow.swift in Sources */,
 				C2A0A42F2CE03131003B98E8 /* ConstantValues.swift in Sources */,
@@ -5957,6 +6008,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A7B71ED1D80AF36A52980129 /* TherapyProfileTests.swift in Sources */,
 				3B5CD2C92D4AECD500CE213C /* ProfileCarbsTests.swift in Sources */,
 				3BEDC9932EEB27B600AC6492 /* IobConsecutiveEventsTests.swift in Sources */,
 				3B1DB90F2E63C14C00BD814B /* DetermineBasalLowEventualGlucoseTests.swift in Sources */,

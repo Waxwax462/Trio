@@ -36,6 +36,14 @@ struct TherapySettingsView: BaseView {
                 }
             )
             .listRowBackground(Color.chart)
+
+            Section(
+                header: Text("Profiles"),
+                content: {
+                    Text("Therapy Profiles").navigationLink(to: .therapyProfiles, from: self)
+                }
+            )
+            .listRowBackground(Color.chart)
         }
         .scrollContentBackground(.hidden)
         .background(appState.trioBackgroundColor(for: colorScheme))
