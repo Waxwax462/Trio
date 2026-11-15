@@ -40,6 +40,10 @@ final class ServiceAssembly: Assembly {
             .inObjectScope(.container)
         container.register(TherapyProfileManager.self) { r in BaseTherapyProfileManager(resolver: r) }
             .inObjectScope(.container)
+        container.register(SportProfileManager.self) { r in BaseSportProfileManager(resolver: r) }
+            .inObjectScope(.container)
+        container.register(SettingsTestDataProvider.self) { r in BaseSettingsTestDataProvider(resolver: r) }
+            .inObjectScope(.container)
         container.register(TrioRemoteControl.self) { r in TrioRemoteControl(resolver: r) }
             .inObjectScope(.container)
         container.register(TelemetryClient.self) { r in TelemetryClient(resolver: r) }

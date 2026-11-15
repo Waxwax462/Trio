@@ -236,3 +236,17 @@ Statistik-Auswertungen liegen im Modul `Stat` (`StatStateModel+Setup/`).
 - [ ] Algorithmus-Code unverändert
 - [ ] Tests geschrieben (Swift Testing) und in `TrioTests` eingetragen
 - [ ] Im Bericht vermerkt: nicht gebaut, nicht getestet (kein Xcode auf diesem Rechner)
+
+---
+
+## 7. Stand der Umsetzung (Branch `feature/profiles-sport-tests`)
+
+Umgesetzt wie in den Abschnitten 3–5 beschrieben, mit diesen Abweichungen und Lücken:
+
+- **#21:** Zeitgesteuertes Umschalten, Shortcuts-Aktion, Anzeige des Profilnamens auf dem Home-Bildschirm, Aufnahme in den Einstellungs-Export und ein Nightscout-„Profile Switch" fehlen. Hochgeladen wird weiter das Profil `"default"`.
+- **#13:** Erreichbar über eine Zeile oben im Adjustments-Bildschirm (kein eigener Tab). Die laufende Phase erscheint auf dem Home-Bildschirm als gewöhnlicher Override mit dem Namen „<Profil> – <Phase>"; Weiter / +15 min / Beenden liegen im Sport-Profile-Bildschirm. Jede Phase hat eine feste Dauer (höchstens 12 Stunden), es gibt keine offene Phase. Shortcuts, Watch und Mitteilungen beim Phasenwechsel fehlen. Der Phasenwechsel hängt an `DeterminationObserver`, nicht an `APSManager.loop()`.
+- **#24:** Nur Stufe 1 (Basal, rückblickend über 14 Tage). Ergebnisse werden nicht gespeichert, sondern bei Bedarf neu berechnet. Als ISF dient der Profilwert, nicht der vom Algorithmus angepasste.
+
+### Lokal prüfen ohne Mac
+
+Die drei Logik-Dateien (`TherapyProfile.swift`, `SportProfile.swift`, `BasalTestEvaluator.swift`) hängen nur von Foundation ab und lassen sich unter Linux kompilieren. Ihre Tests liegen in `TrioTests/*LogicTests.swift` und `BasalTestEvaluatorTests.swift` und kommen ohne Simulator aus. Alles andere (Manager, Core Data, SwiftUI) braucht den Mac-Runner: `unit_tests.yml` hat dafür einen manuellen Start.

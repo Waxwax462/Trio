@@ -64,6 +64,13 @@ extension Adjustments {
                     .padding(.horizontal)
 
                     List {
+                        Section {
+                            NavigationLink(destination: SportProfiles.RootView(resolver: resolver)) {
+                                Text("Sport Profiles")
+                            }
+                        }
+                        .listRowBackground(Color.chart)
+
                         switch state.selectedTab {
                         case .overrides: overrides()
                         case .tempTargets: tempTargets() }
