@@ -1,0 +1,199 @@
+name: Fork unit tests
+run-name: Fork unit tests (${{ github.ref_name }})
+
+# Runs the unit tests in this fork. The upstream workflow (unit_tests.yml) is
+# restricted to the nightscout organisation and to the dev branch, so it never
+# runs here. This one runs on feature branches and on manual start.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'feature/**'
+    paths-ignore:
+      - '**.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  syntax:
+    name: Syntax check of changed Swift files
+    runs-on: macos-26
+    steps:
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_26.2.app/Contents/Developer
+
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Parse changed Swift files
+        run: |
+          git fetch --depth=1 origin main
+          FILES=$(git diff --name-only --diff-filter=AM FETCH_HEAD HEAD -- '*.swift')
+          if [ -z "$FILES" ]; then
+            echo "No changed Swift files."
+            exit 0
+          fi
+          STATUS=0
+          while IFS= read -r file; do
+            if ! xcrun swiftc -frontend -parse "$file"; then
+              echo "::error file=$file::Syntax error"
+              STATUS=1
+            fi
+          done <<< "$FILES"
+          exit $STATUS
+
+  test:
+    name: Build and run unit tests
+    runs-on: macos-26
+
+    env:
+      DESTINATION: "platform=iOS Simulator,name=iPhone 17,OS=26.2"
+
+    steps:
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_26.2.app/Contents/Developer
+
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          submodules: recursive
+
+      - name: Capture submodule state for cache key
+        run: git submodule status --recursive | awk '{print $1, $2}' > .submodule-status
+
+      # DerivedData is kept outside the checkout on purpose: the SwiftFormat
+      # build phase formats everything below SRCROOT.
+      - name: Restore DerivedData
+        id: dd-restore
+        uses: actions/cache/restore@v5
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-dd-${{ hashFiles('**/Package.resolved', '.submodule-status') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-dd-${{ hashFiles('**/Package.resolved', '.submodule-status') }}-
+            ${{ runner.os }}-dd-
+
+      - name: Cache BuildTools (SwiftFormat)
+        uses: actions/cache@v5
+        with:
+          path: BuildTools/.build
+          key: ${{ runner.os }}-buildtools-${{ hashFiles('BuildTools/Package.swift', 'BuildTools/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-buildtools-
+
+      - name: List available simulators
+        run: xcrun simctl list devices available
+
+      - name: Resolve Swift packages
+        run: |
+          set -o pipefail
+          xcodebuild -resolvePackageDependencies \
+            -workspace Trio.xcworkspace \
+            -scheme "Trio Tests" \
+            -onlyUsePackageVersionsFromResolvedFile
+
+      - name: Build for testing
+        run: |
+          set -o pipefail
+          xcodebuild build-for-testing \
+            -workspace Trio.xcworkspace \
+            -scheme "Trio Tests" \
+            -destination "$DESTINATION" \
+            -onlyUsePackageVersionsFromResolvedFile \
+            -disableAutomaticPackageResolution \
+            -skipPackagePluginValidation \
+            -skipMacroValidation \
+            -quiet \
+            COMPILATION_CACHE_ENABLE_CACHING=YES \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            | tee xcodebuild-build.log
+
+      - name: Surface build errors
+        if: always()
+        run: |
+          if [ -f xcodebuild-build.log ]; then
+            echo "::group::Build errors"
+            grep -nE "error:|Undefined symbol|PhaseScriptExecution failed|The following build commands failed|BUILD FAILED|Trace/BPT trap" xcodebuild-build.log | sort -u | tail -n 150 || echo "no matching error lines"
+            echo "::endgroup::"
+          else
+            echo "No xcodebuild-build.log produced."
+          fi
+
+      - name: Upload build log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-build-log
+          path: xcodebuild-build.log
+          if-no-files-found: ignore
+
+      # The build phase runs SwiftFormat over the sources. Show what it changed
+      # so the formatting can be committed.
+      - name: Show formatting changes
+        if: always()
+        run: |
+          git status --porcelain -- . ':(exclude).submodule-status' ':(exclude)xcodebuild-build.log' ':(exclude)xcodebuild.log' || true
+          git diff -- '*.swift' > swiftformat.diff || true
+          wc -l swiftformat.diff || true
+
+      - name: Upload formatting diff
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: swiftformat-diff
+          path: swiftformat.diff
+          if-no-files-found: ignore
+
+      - name: Trim DerivedData before caching
+        if: always()
+        run: |
+          DD="$HOME/Library/Developer/Xcode/DerivedData"
+          find "$DD" -type d -name 'Logs' -prune -exec rm -rf {} + 2>/dev/null || true
+          find "$DD" -name '*.xcactivitylog' -delete 2>/dev/null || true
+          find "$DD" -type d -name 'Index.noindex' -prune -exec rm -rf {} + 2>/dev/null || true
+
+      - name: Save DerivedData
+        if: always() && steps.dd-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-dd-${{ hashFiles('**/Package.resolved', '.submodule-status') }}-${{ github.sha }}
+
+      - name: Run tests
+        id: run_tests
+        run: |
+          set -o pipefail
+          xcodebuild test-without-building \
+            -workspace Trio.xcworkspace \
+            -scheme "Trio Tests" \
+            -destination "$DESTINATION" \
+            -parallel-testing-enabled NO \
+            2>&1 | tee xcodebuild.log
+
+      - name: Summarize test results
+        if: always()
+        run: |
+          if [ -f xcodebuild.log ]; then
+            echo "::group::Failures"
+            grep -nE "error:|✘|failed|Testing failed:|\*\* TEST.*FAILED|Fatal error|Restarting after unexpected exit|could not be launched" xcodebuild.log | tail -n 150 || echo "no failure lines"
+            echo "::endgroup::"
+            grep -E "Test run with .* tests|Executed [0-9]+ tests|\*\* TEST" xcodebuild.log | tail -n 10 || true
+          fi
+
+      - name: Upload test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-test-log
+          path: xcodebuild.log
+          if-no-files-found: ignore
