@@ -34,6 +34,20 @@ extension SportProfiles {
                     }
                 }
                 .listRowBackground(Color.chart)
+
+                Section(
+                    footer: Text("Start a sport profile by itself when an activity begins on your Garmin device.")
+                ) {
+                    NavigationLink(destination: SportAutomationView(state: state)) {
+                        HStack {
+                            Text("Automation")
+                            Spacer()
+                            Text(state.automation.garminEnabled ? "On" : "Off")
+                                .foregroundStyle(Color.secondary)
+                        }
+                    }
+                }
+                .listRowBackground(Color.chart)
             }
             .scrollContentBackground(.hidden)
             .background(appState.trioBackgroundColor(for: colorScheme))

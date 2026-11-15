@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A0046B79C5ED88E2F976CF09 /* SportAutomationManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E57363DD25E722DA417E0C03 /* SportAutomationManagerTests.swift */; };
+		0F6F59F269B3F83EF30AA3EC /* SportAutomationLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15579EE069181F8C5017073E /* SportAutomationLogicTests.swift */; };
+		E7D2081EFD15D1DDCE575D91 /* SportProfileIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9796FE94398A06581CF25A1 /* SportProfileIntents.swift */; };
+		0D889AAB1E5AF9D8EF09FF27 /* SportProfileEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23E073939B9234C5A947275F /* SportProfileEntity.swift */; };
+		8996E371ACB49584035E49CB /* SportAutomationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1F00EA4279A2321B3595A0 /* SportAutomationView.swift */; };
+		4C9D9903FC6C137C4A4B55EC /* SportAutomationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4DB5B8BD007E1C5A5C69E23 /* SportAutomationManager.swift */; };
+		D9E324D12E1C433A631DFE13 /* SportAutomation.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF571EEDDA3EBC9E203A2CFA /* SportAutomation.swift */; };
 		BD0873FDEBB974AC99F953BC /* BasalTestEvaluatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E00F82DCD1011C3C6233A98 /* BasalTestEvaluatorTests.swift */; };
 		DBCD71A44FBB7E3731A1CBA3 /* SettingsTestsRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 590C739CED6BC795B577A16A /* SettingsTestsRootView.swift */; };
 		C6AF9974D4F40F80FDD21BCD /* SettingsTestsStateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD82DD084397F397E23DEAC4 /* SettingsTestsStateModel.swift */; };
@@ -1129,6 +1136,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		E57363DD25E722DA417E0C03 /* SportAutomationManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportAutomationManagerTests.swift; sourceTree = "<group>"; };
+		15579EE069181F8C5017073E /* SportAutomationLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportAutomationLogicTests.swift; sourceTree = "<group>"; };
+		C9796FE94398A06581CF25A1 /* SportProfileIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportProfileIntents.swift; sourceTree = "<group>"; };
+		23E073939B9234C5A947275F /* SportProfileEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportProfileEntity.swift; sourceTree = "<group>"; };
+		8D1F00EA4279A2321B3595A0 /* SportAutomationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportAutomationView.swift; sourceTree = "<group>"; };
+		A4DB5B8BD007E1C5A5C69E23 /* SportAutomationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportAutomationManager.swift; sourceTree = "<group>"; };
+		EF571EEDDA3EBC9E203A2CFA /* SportAutomation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportAutomation.swift; sourceTree = "<group>"; };
 		6E00F82DCD1011C3C6233A98 /* BasalTestEvaluatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasalTestEvaluatorTests.swift; sourceTree = "<group>"; };
 		590C739CED6BC795B577A16A /* SettingsTestsRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTestsRootView.swift; sourceTree = "<group>"; };
 		DD82DD084397F397E23DEAC4 /* SettingsTestsStateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTestsStateModel.swift; sourceTree = "<group>"; };
@@ -2219,6 +2233,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		756DC7E9BC0EDAEFCBBE8A95 /* SportProfile */ = {
+			isa = PBXGroup;
+			children = (
+				C9796FE94398A06581CF25A1 /* SportProfileIntents.swift */,
+				23E073939B9234C5A947275F /* SportProfileEntity.swift */,
+			);
+			path = SportProfile;
+			sourceTree = "<group>";
+		};
 		7FBF1ED5E6716B4331B64A2C /* View */ = {
 			isa = PBXGroup;
 			children = (
@@ -2250,6 +2273,7 @@
 		07973253544E9BB9AB0419C9 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				8D1F00EA4279A2321B3595A0 /* SportAutomationView.swift */,
 				0508CF0C0D9B1CFDAFEFBADD /* SportProfilesRootView.swift */,
 			);
 			path = View;
@@ -2269,6 +2293,8 @@
 		7B0D2E6937A8542AD8EF0E79 /* SportProfiles */ = {
 			isa = PBXGroup;
 			children = (
+				A4DB5B8BD007E1C5A5C69E23 /* SportAutomationManager.swift */,
+				EF571EEDDA3EBC9E203A2CFA /* SportAutomation.swift */,
 				9DF826CE078077C20E26FD3C /* SportProfileManager.swift */,
 				63AB54918B64EBEFED482DA6 /* SportProfile.swift */,
 			);
@@ -3327,6 +3353,8 @@
 		38FCF3EE25E9028E0078B0D1 /* TrioTests */ = {
 			isa = PBXGroup;
 			children = (
+				E57363DD25E722DA417E0C03 /* SportAutomationManagerTests.swift */,
+				15579EE069181F8C5017073E /* SportAutomationLogicTests.swift */,
 				6E00F82DCD1011C3C6233A98 /* BasalTestEvaluatorTests.swift */,
 				60AC9175B7C40959C6B19EEB /* SportProfileManagerTests.swift */,
 				8405207F9CF786F18087C223 /* SportProfileLogicTests.swift */,
@@ -4188,6 +4216,7 @@
 		CE7CA3422A064973004BE681 /* Shortcuts */ = {
 			isa = PBXGroup;
 			children = (
+				756DC7E9BC0EDAEFCBBE8A95 /* SportProfile */,
 				DD4C57A42D73ADDA001BFF2C /* LiveActivity */,
 				118DF7692C5ECBC60067FEB7 /* Override */,
 				110AEDE22C5193D100615CC9 /* Bolus */,
@@ -5351,6 +5380,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E7D2081EFD15D1DDCE575D91 /* SportProfileIntents.swift in Sources */,
+				0D889AAB1E5AF9D8EF09FF27 /* SportProfileEntity.swift in Sources */,
+				8996E371ACB49584035E49CB /* SportAutomationView.swift in Sources */,
+				4C9D9903FC6C137C4A4B55EC /* SportAutomationManager.swift in Sources */,
+				D9E324D12E1C433A631DFE13 /* SportAutomation.swift in Sources */,
 				DBCD71A44FBB7E3731A1CBA3 /* SettingsTestsRootView.swift in Sources */,
 				C6AF9974D4F40F80FDD21BCD /* SettingsTestsStateModel.swift in Sources */,
 				44C29CAFAF0BBEB0BFEC7584 /* SettingsTestsProvider.swift in Sources */,
@@ -6116,6 +6150,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A0046B79C5ED88E2F976CF09 /* SportAutomationManagerTests.swift in Sources */,
+				0F6F59F269B3F83EF30AA3EC /* SportAutomationLogicTests.swift in Sources */,
 				BD0873FDEBB974AC99F953BC /* BasalTestEvaluatorTests.swift in Sources */,
 				09E3F63F4AB4D5C5DA4E3EE6 /* SportProfileManagerTests.swift in Sources */,
 				D8F7A839714205336313ADB2 /* SportProfileLogicTests.swift in Sources */,

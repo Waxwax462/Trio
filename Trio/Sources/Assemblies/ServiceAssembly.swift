@@ -42,6 +42,8 @@ final class ServiceAssembly: Assembly {
             .inObjectScope(.container)
         container.register(SportProfileManager.self) { r in BaseSportProfileManager(resolver: r) }
             .inObjectScope(.container)
+        container.register(SportAutomationManager.self) { r in BaseSportAutomationManager(resolver: r) }
+            .inObjectScope(.container)
         container.register(SettingsTestDataProvider.self) { r in BaseSettingsTestDataProvider(resolver: r) }
             .inObjectScope(.container)
         container.register(TrioRemoteControl.self) { r in TrioRemoteControl(resolver: r) }

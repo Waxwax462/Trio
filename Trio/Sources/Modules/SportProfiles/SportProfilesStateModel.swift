@@ -4,6 +4,7 @@ import SwiftUI
 extension SportProfiles {
     final class StateModel: BaseStateModel<Provider> {
         @Injected() private var sportProfileManager: SportProfileManager!
+        @Injected() private var automationManager: SportAutomationManager!
 
         @Published var profiles: [SportProfile] = []
         @Published var run: SportProfileRun?
@@ -11,6 +12,8 @@ extension SportProfiles {
         @Published var isBusy: Bool = false
         @Published var errorMessage: String?
         @Published var showError: Bool = false
+        @Published var automation = SportAutomationSettings()
+        @Published var lastGarminSignal: Date?
 
         let templates: [SportProfile] = SportProfileLogic.templates()
 
@@ -22,11 +25,31 @@ extension SportProfiles {
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] _ in self?.reload() }
                 .store(in: &lifetime)
+
+            Foundation.NotificationCenter.default.publisher(for: .sportAutomationDidChange)
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in self?.reloadAutomation() }
+                .store(in: &lifetime)
+        }
+
+        func reloadAutomation() {
+            let stored = automationManager.settings()
+            if stored != automation {
+                automation = stored
+            }
+            lastGarminSignal = automationManager.state().lastSignal
+        }
+
+        /// Called when a control on the automation screen changed.
+        func saveAutomation() {
+            guard automation != automationManager.settings() else { return }
+            automationManager.saveSettings(automation)
         }
 
         func reload() {
             profiles = sportProfileManager.profiles()
             run = sportProfileManager.currentRun()
+            reloadAutomation()
         }
 
         /// The phase that is running, if the profile still exists.
