@@ -67,6 +67,7 @@ final class BaseUserNotificationsManager: NSObject, UserNotificationsManager, In
 
             var categories = existingCategories
             categories.update(with: glucoseCategory)
+            categories.update(with: NotificationCategoryFactory.createSportReminderCategory())
             // UNUserNotificationCenter methods should be called on main thread
             Task { @MainActor [weak self] in
                 guard let self else { return }
@@ -234,6 +235,16 @@ extension BaseUserNotificationsManager: UNUserNotificationCenterDelegate {
         let userInfo = response.notification.request.content.userInfo
         if userInfo[AlertUserInfoKey.managerIdentifier.rawValue] is String {
             trioAlertManager.handleNotificationResponse(response)
+            return
+        }
+
+        // Answers to the "Sport today?" question are carried out by the sport reminder manager.
+        if response.notification.request.content.categoryIdentifier == SportReminderLogic.categoryIdentifier {
+            Foundation.NotificationCenter.default.post(
+                name: .sportReminderDidReceiveResponse,
+                object: nil,
+                userInfo: ["action": response.actionIdentifier]
+            )
             return
         }
 

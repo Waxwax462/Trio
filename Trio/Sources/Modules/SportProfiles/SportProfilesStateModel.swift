@@ -5,6 +5,7 @@ extension SportProfiles {
     final class StateModel: BaseStateModel<Provider> {
         @Injected() private var sportProfileManager: SportProfileManager!
         @Injected() private var automationManager: SportAutomationManager!
+        @Injected() private var reminderManager: SportReminderManager!
 
         @Published var profiles: [SportProfile] = []
         @Published var run: SportProfileRun?
@@ -14,6 +15,8 @@ extension SportProfiles {
         @Published var showError: Bool = false
         @Published var automation = SportAutomationSettings()
         @Published var lastGarminSignal: Date?
+        @Published var reminder = SportReminderSettings()
+        @Published var plannedStart: Date?
 
         let templates: [SportProfile] = SportProfileLogic.templates()
 
@@ -30,6 +33,40 @@ extension SportProfiles {
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] _ in self?.reloadAutomation() }
                 .store(in: &lifetime)
+
+            Foundation.NotificationCenter.default.publisher(for: .sportReminderDidChange)
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in self?.reloadReminder() }
+                .store(in: &lifetime)
+        }
+
+        func reloadReminder() {
+            let stored = reminderManager.settings()
+            if stored != reminder {
+                reminder = stored
+            }
+            plannedStart = reminderManager.state().plannedStart
+        }
+
+        /// Called when a control on the daily question screen changed.
+        func saveReminder() {
+            guard reminder != reminderManager.settings() else { return }
+            reminderManager.saveSettings(reminder)
+        }
+
+        func addReminderTime() {
+            let next = min((reminder.times.max() ?? 6 * 60) + 60, 24 * 60 - 1)
+            guard !reminder.times.contains(next), reminder.times.count < SportReminderLogic.maxTimesPerDay else { return }
+            reminder.times = (reminder.times + [next]).sorted()
+        }
+
+        func removeReminderTime(_ minutes: Int) {
+            reminder.times.removeAll { $0 == minutes }
+        }
+
+        func setReminderTime(_ old: Int, to new: Int) {
+            guard old != new, !reminder.times.contains(new) else { return }
+            reminder.times = reminder.times.map { $0 == old ? new : $0 }.sorted()
         }
 
         func reloadAutomation() {
@@ -50,6 +87,7 @@ extension SportProfiles {
             profiles = sportProfileManager.profiles()
             run = sportProfileManager.currentRun()
             reloadAutomation()
+            reloadReminder()
         }
 
         /// The phase that is running, if the profile still exists.

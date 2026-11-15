@@ -79,6 +79,7 @@ extension Notification.Name {
         // Sport profiles change phase after each determination, so the manager has to exist from launch.
         _ = resolver.resolve(SportProfileManager.self)!
         _ = resolver.resolve(SportAutomationManager.self)!
+        _ = resolver.resolve(SportReminderManager.self)!
         _ = resolver.resolve(GarminManager.self)!
         _ = resolver.resolve(BluetoothStateManager.self)!
         _ = resolver.resolve(PluginManager.self)!

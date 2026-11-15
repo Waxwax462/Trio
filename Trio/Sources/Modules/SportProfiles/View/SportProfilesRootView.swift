@@ -36,8 +36,18 @@ extension SportProfiles {
                 .listRowBackground(Color.chart)
 
                 Section(
-                    footer: Text("Start a sport profile by itself when an activity begins on your Garmin device.")
+                    footer: Text(
+                        "Be asked whether you plan sport today, and start a sport profile by itself when an activity begins on your Garmin device."
+                    )
                 ) {
+                    NavigationLink(destination: SportReminderView(state: state)) {
+                        HStack {
+                            Text("Daily Question")
+                            Spacer()
+                            Text(state.reminder.enabled ? "On" : "Off")
+                                .foregroundStyle(Color.secondary)
+                        }
+                    }
                     NavigationLink(destination: SportAutomationView(state: state)) {
                         HStack {
                             Text("Automation")
