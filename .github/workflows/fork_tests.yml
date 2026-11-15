@@ -10,8 +10,7 @@ on:
   push:
     branches:
       - 'feature/**'
-    paths-ignore:
-      - '**.md'
+      - 'build/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
