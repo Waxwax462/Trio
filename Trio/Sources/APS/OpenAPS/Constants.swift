@@ -72,5 +72,7 @@ extension OpenAPS {
         static let sportProfileRun = "freeaps/sport_profile_run.json"
         static let sportAutomationSettings = "freeaps/sport_automation_settings.json"
         static let sportAutomationState = "freeaps/sport_automation_state.json"
+        static let sportReminderSettings = "freeaps/sport_reminder_settings.json"
+        static let sportReminderState = "freeaps/sport_reminder_state.json"
     }
 }
