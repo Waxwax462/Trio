@@ -79,11 +79,22 @@ protocol SportProfileManager {
     func saveProfile(_ profile: SportProfile) throws
     func deleteProfile(id: String)
     func currentRun() -> SportProfileRun?
-    func start(profileID: String) async throws
+    /// Starts a profile at the given phase; earlier phases are skipped.
+    func start(profileID: String, phaseIndex: Int) async throws
     func skipToNextPhase() async throws
+    /// Moves the running profile to a later phase.
+    func jumpToPhase(_ index: Int) async throws
+    /// `OverrideStored.id` of the override that is active right now, whoever set it.
+    func activeOverrideID() async -> String?
     func extendCurrentPhase(byMinutes minutes: Int) async throws
     func cancel() async throws
     func tick(now: Date) async
+}
+
+extension SportProfileManager {
+    func start(profileID: String) async throws {
+        try await start(profileID: profileID, phaseIndex: 0)
+    }
 }
 
 final class BaseSportProfileManager: SportProfileManager, Injectable, @unchecked Sendable {
@@ -139,12 +150,25 @@ final class BaseSportProfileManager: SportProfileManager, Injectable, @unchecked
 
     // MARK: Running
 
-    func start(profileID: String) async throws {
+    func start(profileID: String, phaseIndex: Int) async throws {
         try await queue.run { [self] in
             guard let profile = store.loadProfiles().first(where: { $0.id == profileID }),
                   let cleaned = SportProfileLogic.sanitized(profile)
             else { throw SportProfileError.profileNotFound }
-            try await startPhase(0, of: cleaned, runStartedAt: Date())
+            let index = cleaned.phases.indices.contains(phaseIndex) ? phaseIndex : 0
+            try await startPhase(index, of: cleaned, runStartedAt: Date())
+        }
+    }
+
+    func jumpToPhase(_ index: Int) async throws {
+        try await queue.run { [self] in
+            guard let run = store.loadRun() else { throw SportProfileError.nothingRunning }
+            guard let profile = store.loadProfiles().first(where: { $0.id == run.profileID }),
+                  let cleaned = SportProfileLogic.sanitized(profile),
+                  cleaned.phases.indices.contains(index),
+                  index > run.phaseIndex
+            else { throw SportProfileError.profileNotFound }
+            try await startPhase(index, of: cleaned, runStartedAt: run.startedAt)
         }
     }
 
@@ -312,7 +336,7 @@ final class BaseSportProfileManager: SportProfileManager, Injectable, @unchecked
         }
     }
 
-    private func activeOverrideID() async -> String? {
+    func activeOverrideID() async -> String? {
         let context = makeContext()
         context.name = "sportProfileActiveOverride"
 

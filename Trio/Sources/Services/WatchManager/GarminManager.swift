@@ -1083,6 +1083,12 @@ extension BaseGarminManager: IQUIOverrideDelegate, IQDeviceEventDelegate, IQAppM
             return
         }
 
+        // The data field only runs on an activity screen, so its requests double as a sign that
+        // an activity is under way. The sport automation listens for this.
+        if appUUID == currentDatafield.datafieldUUID {
+            Foundation.NotificationCenter.default.post(name: .garminDatafieldDidRequestStatus, object: nil)
+        }
+
         // Use triggerWatchStateUpdate for consistent deduplication and debouncing
         // This prevents double sends when watchface request coincides with determination
         triggerWatchStateUpdate(triggeredBy: "WatchRequest")

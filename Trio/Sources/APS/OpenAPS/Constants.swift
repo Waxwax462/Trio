@@ -70,5 +70,7 @@ extension OpenAPS {
         static let therapyProfiles = "freeaps/therapy_profiles.json"
         static let sportProfiles = "freeaps/sport_profiles.json"
         static let sportProfileRun = "freeaps/sport_profile_run.json"
+        static let sportAutomationSettings = "freeaps/sport_automation_settings.json"
+        static let sportAutomationState = "freeaps/sport_automation_state.json"
     }
 }
