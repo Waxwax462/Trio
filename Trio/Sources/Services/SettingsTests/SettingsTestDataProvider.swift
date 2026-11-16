@@ -33,6 +33,11 @@ final class BaseSettingsTestDataProvider: SettingsTestDataProvider, Injectable, 
             BasalTestScheduleEntry(startMinute: $0.offset, value: Double($0.sensitivity))
         }
 
+        let carbRatios = storage.retrieve(OpenAPS.Settings.carbRatios, as: CarbRatios.self)
+        input.carbRatioSchedule = (carbRatios?.schedule ?? []).map {
+            BasalTestScheduleEntry(startMinute: $0.offset, value: Double($0.ratio))
+        }
+
         return input
     }
 
@@ -55,9 +60,14 @@ final class BaseSettingsTestDataProvider: SettingsTestDataProvider, Injectable, 
             // Carbs, including the fat and protein equivalents spread over the following hours
             let carbRequest = NSFetchRequest<CarbEntryStored>(entityName: "CarbEntryStored")
             carbRequest.predicate = NSPredicate(format: "date >= %@", eventStart as NSDate)
-            input.carbDates = try context.fetch(carbRequest).compactMap { row in
+            let carbRows = try context.fetch(carbRequest)
+            input.carbDates = carbRows.compactMap { row in
                 guard let date = row.date, row.carbs > 0 || row.isFPU else { return nil }
                 return date
+            }
+            input.carbs = carbRows.compactMap { row in
+                guard let date = row.date, row.carbs > 0, !row.isFPU else { return nil }
+                return BasalTestCarb(date: date, grams: Double(row.carbs))
             }
 
             // Insulin

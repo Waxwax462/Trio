@@ -48,6 +48,8 @@ final class ServiceAssembly: Assembly {
             .inObjectScope(.container)
         container.register(SettingsTestDataProvider.self) { r in BaseSettingsTestDataProvider(resolver: r) }
             .inObjectScope(.container)
+        container.register(AutoSettingsManager.self) { r in BaseAutoSettingsManager(resolver: r) }
+            .inObjectScope(.container)
         container.register(TrioRemoteControl.self) { r in TrioRemoteControl(resolver: r) }
             .inObjectScope(.container)
         container.register(TelemetryClient.self) { r in TelemetryClient(resolver: r) }

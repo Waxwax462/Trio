@@ -7,6 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AD4CE17662AAA01A708C9A78 /* AutoSettingsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B0BD82E99C27E59A12E6584 /* AutoSettingsManagerTests.swift */; };
+		CD6E59E12C874CEB06B99885 /* AutoSettingsEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B7D0B183424CD80B89B1804 /* AutoSettingsEngineTests.swift */; };
+		BD7F92AA1BDA29F75497959C /* AutoSettingsPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2818F4F2B17EF57802659675 /* AutoSettingsPolicyTests.swift */; };
+		82BD9755A58118FF0A7B8628 /* AutoSettingsEstimatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08952EF9230C02557C46ECC3 /* AutoSettingsEstimatorTests.swift */; };
+		F8E14BCC4F4E47C982A49BD5 /* AutoSettingsRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017DEEC5589AFA1D6BDE8B0 /* AutoSettingsRootView.swift */; };
+		221C7C3AE277EA3930233673 /* AutoSettingsStateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754762B62BE154C13B5D7FAA /* AutoSettingsStateModel.swift */; };
+		FC38F8D4D657927DA56D4DBB /* AutoSettingsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485A1908567582E2DFE1FA51 /* AutoSettingsProvider.swift */; };
+		F5B61C8B06AFD762207A68FF /* AutoSettingsDataFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33BF042D364ECBA735CD014B /* AutoSettingsDataFlow.swift */; };
+		A6DE1B3EF87FF5C4A6C51370 /* AutoSettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31DB2ABA2BE4E14563E5C1CD /* AutoSettingsManager.swift */; };
+		B4AB59914B62498CB68B99F5 /* AutoSettingsEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E8F07BF01F73A8CD81A04CB /* AutoSettingsEngine.swift */; };
+		48F899BF72A7BA469642FCA8 /* AutoSettingsPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F18D06CFCB62CDD271FFC5 /* AutoSettingsPolicy.swift */; };
+		4C8AC6210008D79C12B74C1E /* AutoSettingsEstimators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756DC905FD522F1AB766202B /* AutoSettingsEstimators.swift */; };
 		51955AD75CD5596ED4990F13 /* SportReminderManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F97AF8DFC642E7B3EC219CF /* SportReminderManagerTests.swift */; };
 		B23FD62CD93301F7106A096C /* SportReminderLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91B5FCC3D5FD89509E3DDF70 /* SportReminderLogicTests.swift */; };
 		E421F4314DADFE6DCA7FCD04 /* SportReminderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0599B2014E0D49B86FDE87D4 /* SportReminderView.swift */; };
@@ -1141,6 +1153,18 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4B0BD82E99C27E59A12E6584 /* AutoSettingsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoSettingsManagerTests.swift; sourceTree = "<group>"; };
+		0B7D0B183424CD80B89B1804 /* AutoSettingsEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoSettingsEngineTests.swift; sourceTree = "<group>"; };
+		2818F4F2B17EF57802659675 /* AutoSettingsPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoSettingsPolicyTests.swift; sourceTree = "<group>"; };
+		08952EF9230C02557C46ECC3 /* AutoSettingsEstimatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoSettingsEstimatorTests.swift; sourceTree = "<group>"; };
+		C017DEEC5589AFA1D6BDE8B0 /* AutoSettingsRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoSettingsRootView.swift; sourceTree = "<group>"; };
+		754762B62BE154C13B5D7FAA /* AutoSettingsStateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoSettingsStateModel.swift; sourceTree = "<group>"; };
+		485A1908567582E2DFE1FA51 /* AutoSettingsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoSettingsProvider.swift; sourceTree = "<group>"; };
+		33BF042D364ECBA735CD014B /* AutoSettingsDataFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoSettingsDataFlow.swift; sourceTree = "<group>"; };
+		31DB2ABA2BE4E14563E5C1CD /* AutoSettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoSettingsManager.swift; sourceTree = "<group>"; };
+		0E8F07BF01F73A8CD81A04CB /* AutoSettingsEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoSettingsEngine.swift; sourceTree = "<group>"; };
+		86F18D06CFCB62CDD271FFC5 /* AutoSettingsPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoSettingsPolicy.swift; sourceTree = "<group>"; };
+		756DC905FD522F1AB766202B /* AutoSettingsEstimators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoSettingsEstimators.swift; sourceTree = "<group>"; };
 		8F97AF8DFC642E7B3EC219CF /* SportReminderManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportReminderManagerTests.swift; sourceTree = "<group>"; };
 		91B5FCC3D5FD89509E3DDF70 /* SportReminderLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportReminderLogicTests.swift; sourceTree = "<group>"; };
 		0599B2014E0D49B86FDE87D4 /* SportReminderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SportReminderView.swift; sourceTree = "<group>"; };
@@ -2243,6 +2267,36 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7A1DDBEB3BAA0AEF5AF6ABDD /* View */ = {
+			isa = PBXGroup;
+			children = (
+				C017DEEC5589AFA1D6BDE8B0 /* AutoSettingsRootView.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		E112A502D6304A888BF817E5 /* AutoSettings */ = {
+			isa = PBXGroup;
+			children = (
+				7A1DDBEB3BAA0AEF5AF6ABDD /* View */,
+				754762B62BE154C13B5D7FAA /* AutoSettingsStateModel.swift */,
+				485A1908567582E2DFE1FA51 /* AutoSettingsProvider.swift */,
+				33BF042D364ECBA735CD014B /* AutoSettingsDataFlow.swift */,
+			);
+			path = AutoSettings;
+			sourceTree = "<group>";
+		};
+		B64FE5C950E39CCD6A6F59DE /* AutoSettings */ = {
+			isa = PBXGroup;
+			children = (
+				31DB2ABA2BE4E14563E5C1CD /* AutoSettingsManager.swift */,
+				0E8F07BF01F73A8CD81A04CB /* AutoSettingsEngine.swift */,
+				86F18D06CFCB62CDD271FFC5 /* AutoSettingsPolicy.swift */,
+				756DC905FD522F1AB766202B /* AutoSettingsEstimators.swift */,
+			);
+			path = AutoSettings;
+			sourceTree = "<group>";
+		};
 		756DC7E9BC0EDAEFCBBE8A95 /* SportProfile */ = {
 			isa = PBXGroup;
 			children = (
@@ -2580,6 +2634,7 @@
 		3811DE0325C9D31700A708ED /* Modules */ = {
 			isa = PBXGroup;
 			children = (
+				E112A502D6304A888BF817E5 /* AutoSettings */,
 				90EEFD2A1D1E0A3066059B25 /* SettingsTests */,
 				ED23CDE2AAEF94D1F547BC7B /* SportProfiles */,
 				68DCF0A8A6ECA571E7428FF5 /* TherapyProfiles */,
@@ -2749,6 +2804,7 @@
 		3811DE9125C9D88200A708ED /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				B64FE5C950E39CCD6A6F59DE /* AutoSettings */,
 				CB5563129E4EFDA257EF5CE1 /* SettingsTests */,
 				7B0D2E6937A8542AD8EF0E79 /* SportProfiles */,
 				818454033B6A7E23E8F8CBA4 /* TherapyProfiles */,
@@ -3366,6 +3422,10 @@
 		38FCF3EE25E9028E0078B0D1 /* TrioTests */ = {
 			isa = PBXGroup;
 			children = (
+				4B0BD82E99C27E59A12E6584 /* AutoSettingsManagerTests.swift */,
+				0B7D0B183424CD80B89B1804 /* AutoSettingsEngineTests.swift */,
+				2818F4F2B17EF57802659675 /* AutoSettingsPolicyTests.swift */,
+				08952EF9230C02557C46ECC3 /* AutoSettingsEstimatorTests.swift */,
 				8F97AF8DFC642E7B3EC219CF /* SportReminderManagerTests.swift */,
 				91B5FCC3D5FD89509E3DDF70 /* SportReminderLogicTests.swift */,
 				E57363DD25E722DA417E0C03 /* SportAutomationManagerTests.swift */,
@@ -5395,6 +5455,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F8E14BCC4F4E47C982A49BD5 /* AutoSettingsRootView.swift in Sources */,
+				221C7C3AE277EA3930233673 /* AutoSettingsStateModel.swift in Sources */,
+				FC38F8D4D657927DA56D4DBB /* AutoSettingsProvider.swift in Sources */,
+				F5B61C8B06AFD762207A68FF /* AutoSettingsDataFlow.swift in Sources */,
+				A6DE1B3EF87FF5C4A6C51370 /* AutoSettingsManager.swift in Sources */,
+				B4AB59914B62498CB68B99F5 /* AutoSettingsEngine.swift in Sources */,
+				48F899BF72A7BA469642FCA8 /* AutoSettingsPolicy.swift in Sources */,
+				4C8AC6210008D79C12B74C1E /* AutoSettingsEstimators.swift in Sources */,
 				E421F4314DADFE6DCA7FCD04 /* SportReminderView.swift in Sources */,
 				B8B9FB7A15F4FBF6504562B8 /* SportReminderManager.swift in Sources */,
 				E26C61DF712A441ED396671A /* SportReminder.swift in Sources */,
@@ -6168,6 +6236,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AD4CE17662AAA01A708C9A78 /* AutoSettingsManagerTests.swift in Sources */,
+				CD6E59E12C874CEB06B99885 /* AutoSettingsEngineTests.swift in Sources */,
+				BD7F92AA1BDA29F75497959C /* AutoSettingsPolicyTests.swift in Sources */,
+				82BD9755A58118FF0A7B8628 /* AutoSettingsEstimatorTests.swift in Sources */,
 				51955AD75CD5596ED4990F13 /* SportReminderManagerTests.swift in Sources */,
 				B23FD62CD93301F7106A096C /* SportReminderLogicTests.swift in Sources */,
 				A0046B79C5ED88E2F976CF09 /* SportAutomationManagerTests.swift in Sources */,

@@ -54,6 +54,7 @@ enum Screen: Identifiable, Hashable {
     case treatmentsSettings
     case therapyProfiles
     case settingsTests
+    case autoSettings
 
     var id: Int { String(reflecting: self).hashValue }
 }
@@ -177,6 +178,8 @@ extension Screen {
             TherapyProfiles.RootView(resolver: resolver)
         case .settingsTests:
             SettingsTests.RootView(resolver: resolver)
+        case .autoSettings:
+            AutoSettings.RootView(resolver: resolver)
         }
     }
 

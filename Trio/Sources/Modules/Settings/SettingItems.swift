@@ -115,7 +115,13 @@ enum SettingItems {
         SettingItem(title: "CR", view: .crEditor, path: ["Therapy Settings"]),
         SettingItem(title: "Glucose Targets", view: .targetsEditor, path: ["Therapy Settings"]),
         SettingItem(title: "Therapy Profiles", view: .therapyProfiles, path: ["Therapy Settings"]),
-        SettingItem(title: "Basal Rate Check", view: .settingsTests, path: ["Therapy Settings"])
+        SettingItem(title: "Basal Rate Check", view: .settingsTests, path: ["Therapy Settings"]),
+        SettingItem(
+            title: "Self-Adjusting Settings",
+            view: .autoSettings,
+            searchContents: ["Learn Basal Rates", "Learn Insulin Sensitivity", "Learn Carb Ratio", "Shadow Mode"],
+            path: ["Therapy Settings"]
+        )
     ]
 
     static let algorithmItems = [

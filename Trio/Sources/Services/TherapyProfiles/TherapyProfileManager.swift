@@ -162,6 +162,7 @@ protocol TherapyProfileManager {
     func differences(toProfile id: String) -> [TherapyProfileDifference]
     func activateProfile(id: String) async throws
     func applyBasalProfile(_ basal: [BasalProfileEntry]) async throws
+    func applySettings(_ settings: TherapySettingsSnapshot) async throws
 }
 
 final class BaseTherapyProfileManager: TherapyProfileManager, Injectable, @unchecked Sendable {
@@ -397,6 +398,34 @@ final class BaseTherapyProfileManager: TherapyProfileManager, Injectable, @unche
 
         debug(.service, "Basal schedule replaced through the therapy profile manager")
         await applySideEffects(settings, basalChanged: true, othersChanged: false)
+    }
+
+    /// Replaces the settings of the active profile, the same way the editors do. Basal rates go
+    /// to the pump first; if the pump refuses, nothing is written.
+    func applySettings(_ settings: TherapySettingsSnapshot) async throws {
+        let live = store.loadCurrentSettings()
+
+        // Problems the live settings already have are not this change's fault.
+        let known = TherapyProfileLogic.validate(live, supportedBasalRates: supportedBasalRates, maxBasal: maxBasal)
+        let problems = TherapyProfileLogic.validate(settings, supportedBasalRates: supportedBasalRates, maxBasal: maxBasal)
+            .filter { !known.contains($0) }
+        guard problems.isEmpty else { throw TherapyProfileError.invalidSettings(problems) }
+
+        let basalChanged = !TherapyProfileLogic.hasSameBasal(live.basal, settings.basal)
+        if basalChanged {
+            try await syncBasal(settings.basal)
+        }
+        store.saveCurrentSettings(settings)
+
+        var current = library()
+        if let activeIndex = current.profiles.firstIndex(where: { $0.id == current.activeProfileID }) {
+            current.profiles[activeIndex].settings = settings
+            current.profiles[activeIndex].updatedAt = Date()
+            store.saveLibrary(current)
+        }
+
+        debug(.service, "Therapy settings replaced through the therapy profile manager")
+        await applySideEffects(settings, basalChanged: basalChanged, othersChanged: true)
     }
 
     private func syncBasal(_ basal: [BasalProfileEntry]) async throws {
