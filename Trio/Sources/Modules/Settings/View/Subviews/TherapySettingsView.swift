@@ -42,6 +42,7 @@ struct TherapySettingsView: BaseView {
                 content: {
                     Text("Therapy Profiles").navigationLink(to: .therapyProfiles, from: self)
                     Text("Basal Rate Check").navigationLink(to: .settingsTests, from: self)
+                    Text("Self-Adjusting Settings").navigationLink(to: .autoSettings, from: self)
                 }
             )
             .listRowBackground(Color.chart)

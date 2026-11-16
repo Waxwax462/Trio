@@ -80,6 +80,7 @@ extension Notification.Name {
         _ = resolver.resolve(SportProfileManager.self)!
         _ = resolver.resolve(SportAutomationManager.self)!
         _ = resolver.resolve(SportReminderManager.self)!
+        _ = resolver.resolve(AutoSettingsManager.self)!
         _ = resolver.resolve(GarminManager.self)!
         _ = resolver.resolve(BluetoothStateManager.self)!
         _ = resolver.resolve(PluginManager.self)!

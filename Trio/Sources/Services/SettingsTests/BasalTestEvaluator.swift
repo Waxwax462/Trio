@@ -54,6 +54,11 @@ struct BasalTestTempBasal: Equatable {
     let isScheduledBasal: Bool
 }
 
+struct BasalTestCarb: Equatable {
+    let date: Date
+    let grams: Double
+}
+
 struct BasalTestSpan: Equatable {
     let start: Date
     let end: Date
@@ -78,6 +83,11 @@ struct BasalTestInput {
     var basalSchedule: [BasalTestScheduleEntry] = []
     /// mg/dL per unit
     var sensitivitySchedule: [BasalTestScheduleEntry] = []
+    /// Carb entries with their amounts, without fat and protein equivalents. Used by the
+    /// settings learner; `carbDates` stays the complete list of everything that was eaten.
+    var carbs: [BasalTestCarb] = []
+    /// Grams per unit. Used by the settings learner.
+    var carbRatioSchedule: [BasalTestScheduleEntry] = []
 }
 
 // MARK: - Output
